@@ -23,4 +23,4 @@ import(/* webpackChunkName: "mdi" */ '@mdi/font/css/materialdesignicons.css')
 
 require('./helpers/compatibility.js')
 require('./client-app.js')
-import(/* webpackChunkName: "theme" */ './themes/' + siteConfig.theme + '/js/app.js')
+import('./themes/wikiwyrm/scss/app.scss')

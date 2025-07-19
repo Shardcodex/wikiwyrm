@@ -1,6 +1,6 @@
-name: Default
+name: wikiwyrm
 author: Shardcodex
-site: https://wikiwyrm.com/
+site: https://wikiwyrm.copm/
 version: 1.0.0
 requirements:
   minimum: '>= 2.0.0'
