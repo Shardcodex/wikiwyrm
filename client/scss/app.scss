@@ -29,3 +29,65 @@
 @import 'pages/error';
 
 @import 'layout/_rtl';
+
+// Some themeing tweeks because Vue
+
+.theme--dark.v-navigation-drawer.primary {
+  background: #3F37C9 !important;
+}
+
+.theme--light.v-navigation-drawer.primary {
+  background: #3F37C9 !important;
+}
+
+.theme--dark.v-list.primary {
+  background: #3F37C9 !important;
+}
+
+.theme--light.v-list.primary {
+  background: #3F37C9 !important;
+}
+
+.theme--dark.v-application .blue.darken-3 {
+  background: #3730b0 !important;
+}
+.theme--light.v-application .blue.darken-3 {
+  background: #3730b0 !important;
+}
+
+.theme--dark.v-application .blue.darken-2 {
+  background: #3C35C0 !important;
+}
+.theme--light.v-application .blue.darken-2 {
+  background: #3C35C0 !important;
+}
+
+// #45523E maybe?
+
+//infobox styling
+.infobox {
+  border: 2px solid #5b21b6;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #fefce8;
+  color: #3f3f46;
+  margin: 1rem 0;
+  float: right;
+  top: 64px;
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+  width: 250px;
+}
+
+.contents {
+  position: relative;
+}
+
+.contents .infobox {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+

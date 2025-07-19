@@ -1,6 +1,6 @@
-name: Default
-author: Shardcodex
-site: https://wikiwyrm.com/
+name: Defaultbackup
+author: requarks.io
+site: https://wiki.requarks.io/
 version: 1.0.0
 requirements:
   minimum: '>= 2.0.0'

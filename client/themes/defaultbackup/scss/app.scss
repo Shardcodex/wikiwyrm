@@ -1,19 +1,4 @@
-
-
-  .nav-header-dev{
-    display:none !important;
-  }
-
-  .nav-header-inner .v-avatar {
-    height: auto !important;
-    width: 160px !important;
-  }
-  .v-toolbar__title .subheading{
-    display:none;
-  }
-
-
- /* THEME SPECIFIC STYLES */
+/* THEME SPECIFIC STYLES */
 
 .v-main .contents {
   color: mc('grey', '800');
@@ -28,24 +13,12 @@
     color: mc('grey', '300');
   }
 
- .v-application.theme--light {
-  background: mc('blue', '500') !important;
-
-}
-
-.v-application.theme--dark {
-  background: mc('blue', '500') !important;
-
-}
-
-
   // ---------------------------------
   // LINKS
   // ---------------------------------
 
   a {
     color: mc('blue', '700');
-    text-decoration: none !important;
 
     &.is-internal-link.is-invalid-page {
       color: mc('red', '700');
@@ -65,7 +38,7 @@
         display: inline-block;
         content: '\F03CC';
         color: mc('grey', '500');
-        text-decoration: none !important;
+        text-decoration: none;
       }
     }
 
@@ -712,7 +685,7 @@
         display:inline-block;
         vertical-align:top;
         padding-top:0;
-
+        
         &:first-child {
           width: 100%;
         }

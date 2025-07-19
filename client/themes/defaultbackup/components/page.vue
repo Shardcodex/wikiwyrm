@@ -327,14 +327,13 @@
             v-alert.mb-5(v-if='!isPublished', color='red', outlined, icon='mdi-minus-circle', dense)
               .caption {{$t('common:page.unpublishedWarning')}}
             .contents(ref='container')
-              div(v-if="infoboxHtml" class="infobox" v-html="infoboxHtml")
               slot(name='contents')
             .comments-container#discussion(v-if='commentsEnabled && commentsPerms.read && !printView')
-            .comments-header
-              v-icon.mr-2(dark) mdi-comment-text-outline
-              span {{$t('common:comments.title')}}
-            .comments-main
-              slot(name='comments')
+              .comments-header
+                v-icon.mr-2(dark) mdi-comment-text-outline
+                span {{$t('common:comments.title')}}
+              .comments-main
+                slot(name='comments')
     nav-footer
     notify
     search-results
@@ -411,26 +410,86 @@ export default {
     StatusIndicator
   },
   props: {
-    pageId: { type: Number, default: 0 },
-    locale: { type: String, default: 'en' },
-    path: { type: String, default: 'home' },
-    title: { type: String, default: 'Untitled Page' },
-    description: { type: String, default: '' },
-    createdAt: { type: String, default: '' },
-    updatedAt: { type: String, default: '' },
-    tags: { type: Array, default: () => ([]) },
-    authorName: { type: String, default: 'Unknown' },
-    authorId: { type: Number, default: 0 },
-    editor: { type: String, default: '' },
-    isPublished: { type: Boolean, default: false },
-    toc: { type: String, default: '' },
-    sidebar: { type: String, default: '' },
-    navMode: { type: String, default: 'MIXED' },
-    commentsEnabled: { type: Boolean, default: false },
-    effectivePermissions: { type: String, default: '' },
-    commentsExternal: { type: Boolean, default: false },
-    editShortcuts: { type: String, default: '' },
-    filename: { type: String, default: '' }
+    pageId: {
+      type: Number,
+      default: 0
+    },
+    locale: {
+      type: String,
+      default: 'en'
+    },
+    path: {
+      type: String,
+      default: 'home'
+    },
+    title: {
+      type: String,
+      default: 'Untitled Page'
+    },
+    description: {
+      type: String,
+      default: ''
+    },
+    createdAt: {
+      type: String,
+      default: ''
+    },
+    updatedAt: {
+      type: String,
+      default: ''
+    },
+    tags: {
+      type: Array,
+      default: () => ([])
+    },
+    authorName: {
+      type: String,
+      default: 'Unknown'
+    },
+    authorId: {
+      type: Number,
+      default: 0
+    },
+    editor: {
+      type: String,
+      default: ''
+    },
+    isPublished: {
+      type: Boolean,
+      default: false
+    },
+    toc: {
+      type: String,
+      default: ''
+    },
+    sidebar: {
+      type: String,
+      default: ''
+    },
+    navMode: {
+      type: String,
+      default: 'MIXED'
+    },
+    commentsEnabled: {
+      type: Boolean,
+      default: false
+    },
+    effectivePermissions: {
+      type: String,
+      default: ''
+    },
+    commentsExternal: {
+      type: Boolean,
+      default: false
+    },
+    editShortcuts: {
+      type: String,
+      default: ''
+    },
+    filename: {
+      type: String,
+      default: ''
+    }
   },
   data() {
     return {
@@ -445,24 +504,23 @@ export default {
       },
       scrollStyle: {
         vuescroll: {},
-        scrollPanel: { initialScrollX: 0.01, scrollingX: false, speed: 50 },
-        rail: { gutterOfEnds: '2px' },
+        scrollPanel: {
+          initialScrollX: 0.01, // fix scrollbar not disappearing on load
+          scrollingX: false,
+          speed: 50
+        },
+        rail: {
+          gutterOfEnds: '2px'
+        },
         bar: {
           onlyShowBarOnScroll: false,
           background: '#42A5F5',
-          hoverStyle: { background: '#64B5F6' }
+          hoverStyle: {
+            background: '#64B5F6'
+          }
         }
       },
-      winWidth: 0,
-      infoboxHtml: null // <- added for infobox
-    }
-  },
-  watch: {
-    '$slots.contents': {
-      handler () {
-        this.extractInfobox()
-      },
-      immediate: true
+      winWidth: 0
     }
   },
   computed: {
@@ -471,25 +529,29 @@ export default {
     commentsPerms: get('page/effectivePermissions@comments'),
     editShortcutsObj: get('page/editShortcuts'),
     rating: {
-      get () { return 3.5 },
-      set (val) {}
+      get () {
+        return 3.5
+      },
+      set (val) {
+
+      }
     },
     breadcrumbs() {
-      return [{ path: '/', name: 'Home' }].concat(
-        _.reduce(this.path.split('/'), (result, value) => {
-          result.push({
-            path: _.get(_.last(result), 'path', `/${this.locale}`) + `/${value}`,
-            name: value
-          })
-          return result
-        }, [])
-      )
+      return [{ path: '/', name: 'Home' }].concat(_.reduce(this.path.split('/'), (result, value, key) => {
+        result.push({
+          path: _.get(_.last(result), 'path', `/${this.locale}`) + `/${value}`,
+          name: value
+        })
+        return result
+      }, []))
     },
     pageUrl () { return window.location.href },
     upBtnPosition () {
-      return this.$vuetify.breakpoint.mdAndUp ?
-        (this.$vuetify.rtl ? `right: 235px;` : `left: 235px;`) :
-        (this.$vuetify.rtl ? `right: 65px;` : `left: 65px;`)
+      if (this.$vuetify.breakpoint.mdAndUp) {
+        return this.$vuetify.rtl ? `right: 235px;` : `left: 235px;`
+      } else {
+        return this.$vuetify.rtl ? `right: 65px;` : `left: 65px;`
+      }
     },
     sidebarDecoded () {
       return JSON.parse(Buffer.from(this.sidebar, 'base64').toString())
@@ -505,9 +567,8 @@ export default {
     hasReadSourcePermission: get('page/effectivePermissions@source.read'),
     hasReadHistoryPermission: get('page/effectivePermissions@history.read'),
     hasAnyPagePermissions () {
-      return this.hasAdminPermission || this.hasWritePagesPermission ||
-        this.hasManagePagesPermission || this.hasDeletePagesPermission ||
-        this.hasReadSourcePermission || this.hasReadHistoryPermission
+      return this.hasAdminPermission || this.hasWritePagesPermission || this.hasManagePagesPermission ||
+        this.hasDeletePagesPermission || this.hasReadSourcePermission || this.hasReadHistoryPermission
     },
     printView: sync('site/printView'),
     editMenuExternalUrl () {
@@ -537,23 +598,30 @@ export default {
     if (this.editShortcuts) {
       this.$store.set('page/editShortcuts', JSON.parse(Buffer.from(this.editShortcuts, 'base64').toString()))
     }
+
     this.$store.set('page/mode', 'view')
   },
   mounted () {
     if (this.$vuetify.theme.dark) {
       this.scrollStyle.bar.background = '#424242'
     }
+
+    // -> Check side navigation visibility
     this.handleSideNavVisibility()
     window.addEventListener('resize', _.debounce(() => {
       this.handleSideNavVisibility()
     }, 500))
 
+    // -> Highlight Code Blocks
     Prism.highlightAllUnder(this.$refs.container)
+
+    // -> Render Mermaid diagrams
     mermaid.mermaidAPI.initialize({
       startOnLoad: true,
       theme: this.$vuetify.theme.dark ? `dark` : `default`
     })
 
+    // -> Handle anchor scrolling
     if (window.location.hash && window.location.hash.length > 1) {
       if (document.readyState === 'complete') {
         this.$nextTick(() => {
@@ -566,6 +634,7 @@ export default {
       }
     }
 
+    // -> Handle anchor links within the page contents
     this.$nextTick(() => {
       this.$refs.container.querySelectorAll(`a[href^="#"], a[href^="${window.location.href.replace(window.location.hash, '')}#"]`).forEach(el => {
         el.onclick = ev => {
@@ -574,57 +643,66 @@ export default {
           this.$vuetify.goTo(decodeURIComponent(ev.currentTarget.hash), this.scrollOpts)
         }
       })
+
       window.boot.notify('page-ready')
-      this.infoboxHtml = '<div class="infobox">Debug infobox</div>'
     })
-    this.extractInfobox()
   },
   methods: {
-    goHome () { window.location.assign('/') },
-    toggleNavigation () { this.navOpen = !this.navOpen },
+    goHome () {
+      window.location.assign('/')
+    },
+    toggleNavigation () {
+      this.navOpen = !this.navOpen
+    },
     upBtnScroll () {
       const scrollOffset = window.pageYOffset || document.documentElement.scrollTop
       this.upBtnShown = scrollOffset > window.innerHeight * 0.33
     },
     print () {
-      this.printView = !this.printView
       if (this.printView) {
-        this.$nextTick(() => { window.print() })
+        this.printView = false
+      } else {
+        this.printView = true
+        this.$nextTick(() => {
+          window.print()
+        })
       }
     },
-    pageEdit () { this.$root.$emit('pageEdit') },
-    pageHistory () { this.$root.$emit('pageHistory') },
-    pageSource () { this.$root.$emit('pageSource') },
-    pageConvert () { this.$root.$emit('pageConvert') },
-    pageDuplicate () { this.$root.$emit('pageDuplicate') },
-    pageMove () { this.$root.$emit('pageMove') },
-    pageDelete () { this.$root.$emit('pageDelete') },
+    pageEdit () {
+      this.$root.$emit('pageEdit')
+    },
+    pageHistory () {
+      this.$root.$emit('pageHistory')
+    },
+    pageSource () {
+      this.$root.$emit('pageSource')
+    },
+    pageConvert () {
+      this.$root.$emit('pageConvert')
+    },
+    pageDuplicate () {
+      this.$root.$emit('pageDuplicate')
+    },
+    pageMove () {
+      this.$root.$emit('pageMove')
+    },
+    pageDelete () {
+      this.$root.$emit('pageDelete')
+    },
     handleSideNavVisibility () {
-      if (window.innerWidth === this.winWidth) return
+      if (window.innerWidth === this.winWidth) { return }
       this.winWidth = window.innerWidth
-      this.navShown = this.$vuetify.breakpoint.mdAndUp
+      if (this.$vuetify.breakpoint.mdAndUp) {
+        this.navShown = true
+      } else {
+        this.navShown = false
+      }
     },
     goToComments (focusNewComment = false) {
       this.$vuetify.goTo('#discussion', this.scrollOpts)
       if (focusNewComment) {
         document.querySelector('#discussion-new').focus()
       }
-    },
-    extractInfobox () {
-      this.$nextTick(() => {
-        const container = this.$refs.container
-        if (!container) return
-
-        const infoboxEl = container.querySelector('.infobox')
-        if (infoboxEl) {
-          // Clone the infobox
-          const clone = infoboxEl.cloneNode(true)
-          // Insert the clone above the contents container
-          this.$el.insertBefore(clone, container)
-          // Hide the original so Vue doesn’t get confused
-          infoboxEl.style.display = 'none'
-        }
-      })
     }
   }
 }

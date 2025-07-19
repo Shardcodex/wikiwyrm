@@ -3,6 +3,8 @@ const mdAttrs = require('markdown-it-attrs')
 const mdDecorate = require('markdown-it-decorate')
 const _ = require('lodash')
 const underline = require('./underline')
+const infoboxPlugin = require('../../../../server/plugins/markdown-it-infobox')
+const infoboxExtractPlugin = require('../../plugins/markdown-it-infobox-extract')
 
 const quoteStyles = {
   Chinese: '””‘’',
@@ -44,6 +46,8 @@ module.exports = {
       allowedAttributes: ['id', 'class', 'target']
     })
     mkdown.use(mdDecorate)
+    mkdown.use(infoboxPlugin)
+    mkdown.use(infoboxExtractPlugin)
 
     for (let child of this.children) {
       const renderer = require(`../${_.kebabCase(child.key)}/renderer.js`)
