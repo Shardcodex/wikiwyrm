@@ -1,12 +1,12 @@
-# 🐉 **WikiWyrm** – A World‑Building Wiki Engine for Authors
+# **WikiWyrm** – A World‑Building Wiki Engine for Authors
 
 WikiWyrm is an AGPL‑3 self‑hosted knowledge base tailored to novelists, RPG game‑masters, and other world builders.  
 It is derived from the Wiki.js code base but ships with:
 
 * **Infobox plugin** (Markdown → HTML tables)
-* 🗺️ Author‑centric UX: Characters, Locations, Magic, Timelines
+* **Author‑centric UX**: Characters, Locations, Magic, Timelines
 * **Invite‑only** with plans for free and paid tier private worlds
-*  **Privacy First** wiki. Meaning, your ideas stay your ideas unless you choose to share them. No more fretting or finding privacy gatekept by higher tier subscriptions.
+*  **Privacy First** wiki. Meaning, your ideas stay your ideas unless you choose to share them. No more fretting or finding privacy gatekept by higher-tier subscriptions.
 
 > **Status:** Private alpha – sign up for the waiting list on [wikiwyrm.com](https://wikiwyrm.com).
 
