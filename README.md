@@ -33,7 +33,7 @@ docker compose up -d   # builds & starts on :3000
 | [`docs/theme.md`](docs/theme.md) | Customising the fantasy theme |
 
 ## Contributing
-We welcome PRs for bug fixes & improvements. Please read our [Code of Conduct](docs/CODE_OF_CONDUCT.md) and open an issue to discuss major changes. All contributions are released under the **AGPL‑3** license.
+We welcome PRs for bug fixes & improvements. Please read our [Code of Conduct](/CODE_OF_CONDUCT.md) and open an issue to discuss major changes. All contributions are released under the **AGPL‑3** license.
 
 ## License
-WikiWyrm is licensed under the **GNU AGPL v3.0.** See the [LICENSE](docs/license.md) file for details.
+WikiWyrm is licensed under the **GNU AGPL v3.0.** See the [LICENSE](/license.md) file for details.
