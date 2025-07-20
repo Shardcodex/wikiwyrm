@@ -1,4 +1,3 @@
-## 2. CODE_OF_CONDUCT.md
 # Contributor Covenant Code of Conduct (v2.1)
 
 ## Our Pledge
