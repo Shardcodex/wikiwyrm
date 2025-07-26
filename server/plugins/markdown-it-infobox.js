@@ -27,7 +27,7 @@ module.exports = function infoboxPlugin(md) {
     content.split('\n').forEach(line => {
       const match = line.match(/^(\w+):\s*(.+)$/)
       if (match) {
-        const t = state.push('html_inline', '', 0)
+        const t = state.push('html_block', '', 0)
         t.content = `<div><strong>${match[1]}:</strong> ${match[2]}</div>`
       }
     })

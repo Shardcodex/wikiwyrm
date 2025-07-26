@@ -64,7 +64,6 @@ export default {
   },
   async mounted () {
     this.$store.set('editor/editorKey', 'ckeditor')
-
     this.editor = await DecoupledEditor.create(this.$refs.editor, {
       language: this.locale,
       placeholder: 'Type the page content here',
@@ -89,7 +88,9 @@ export default {
         }
       }
     })
-    this.$refs.toolbarContainer.appendChild(this.editor.ui.view.toolbar.element)
+    this.$refs.toolbarContainer.appendChild(
+      this.editor.ui.view.toolbar.element
+    )
 
     if (this.mode !== 'create') {
       this.editor.setData(this.$store.get('editor/content'))

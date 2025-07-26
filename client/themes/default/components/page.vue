@@ -454,13 +454,16 @@ export default {
         }
       },
       winWidth: 0,
-      infoboxHtml: null // <- added for infobox
+      infoboxHtml: null, // <- added for infobox
+      infoboxProcessed: false // <- added for ONLY ONE infobox
     }
   },
   watch: {
     '$slots.contents': {
       handler () {
-        this.extractInfobox()
+        if (!this.infoboxHtml) {
+          this.extractInfobox()
+        }
       },
       immediate: true
     }
@@ -575,7 +578,6 @@ export default {
         }
       })
       window.boot.notify('page-ready')
-      this.infoboxHtml = '<div class="infobox">Debug infobox</div>'
     })
     this.extractInfobox()
   },
@@ -611,19 +613,36 @@ export default {
       }
     },
     extractInfobox () {
-      this.$nextTick(() => {
-        const container = this.$refs.container
-        if (!container) return
+      // run only once per page render
+      if (this.infoboxProcessed) return // ← early exit
 
-        const infoboxEl = container.querySelector('.infobox')
-        if (infoboxEl) {
-          // Clone the infobox
-          const clone = infoboxEl.cloneNode(true)
-          // Insert the clone above the contents container
-          this.$el.insertBefore(clone, container)
-          // Hide the original so Vue doesn’t get confused
-          infoboxEl.style.display = 'none'
+      this.$nextTick(() => {
+        const c = this.$refs.container
+        if (!c) return
+
+        const box = c.querySelector('.infobox')
+        if (!box) return // nothing to extract
+
+        /* clone BEFORE removing so children stay available */
+        const clone = box.cloneNode(true)
+        box.remove()
+
+        const rawLines = [...clone.children].length ? [...clone.children].map(el => el.textContent.trim()) : clone.textContent.trim().split('\n').filter(Boolean)
+
+        const rows = rawLines
+          .filter(txt => txt.includes(':'))
+          .map(txt => {
+            const idx = txt.indexOf(':')
+            const key = txt.slice(0, idx).trim()
+            const val = txt.slice(idx + 1).trim()
+            return `<tr><td><strong>${key}</strong></td><td>${val}</td></tr>`
+          }).join('')
+
+        if (rows) {
+          this.infoboxHtml = `<table class="infobox-table">${rows}</table>`
         }
+
+        this.infoboxProcessed = true // mark done
       })
     }
   }
@@ -708,6 +727,23 @@ export default {
         border-bottom-right-radius: 5px;
       }
     }
+  }
+}
+.contents .infobox {
+  float: right;
+  margin: 0 0 1em 1em;
+  max-width: 300px;
+  width: 35%;
+  padding: 1em;
+  border-radius: 4px;
+}
+
+@media (max-width: 960px) {
+  .contents .infobox {
+    float: none;
+    width: 100%;
+    max-width: 100% !important;
+    margin: 0 0 1em 0;
   }
 }
 

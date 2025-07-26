@@ -66,10 +66,8 @@
 
 //infobox styling
 .infobox {
-  border: 2px solid #5b21b6;
   border-radius: 8px;
   padding: 1rem;
-  background: #fefce8;
   color: #3f3f46;
   margin: 1rem 0;
   float: right;
@@ -83,11 +81,35 @@
   position: relative;
 }
 
-.contents .infobox {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
+
+.v-main .contents h1,
+.v-main .contents h2,
+.v-main .contents h3,
+.v-main .contents h4,
+.v-main .contents h5,
+.v-main .contents h6 {
+  overflow: hidden; /* contain float interaction */
 }
 
+.infobox-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
 
+.infobox-table td {
+  border: 1px solid #ccc;
+  padding: 6px 10px;
+  vertical-align: top;
+  text-transform: capitalize
+}
+
+.infobox-table td:first-child {
+  font-weight: bold;
+  background-color: #f0f0f0 !important;
+  width: 35%;
+}
+
+.v-main .contents hr{
+  overflow:hidden;
+}
