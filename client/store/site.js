@@ -16,7 +16,10 @@ const state = {
   searchIsLoading: false,
   searchRestrictLocale: false,
   searchRestrictPath: false,
-  printView: false
+  printView: false,
+  featureFlags: {
+    codeEditorEnabled: false // ← master toggle
+  }
 }
 
 export default {

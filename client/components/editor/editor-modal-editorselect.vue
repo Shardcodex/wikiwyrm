@@ -42,7 +42,9 @@
                 light
                 ripple
                 )
-                v-card-text.text-center(@click='selectEditor("code")')
+                v-card-text.text-center(
+                  v-if="$store.state.site.featureFlags.codeEditorEnabled"
+                  @click='selectEditor("code")')
                   img(src='/_assets/svg/editor-icon-code.svg', alt='Code', style='width: 36px;')
                   .body-2.primary--text.mt-2 Code
                   .caption.grey--text Raw HTML

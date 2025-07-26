@@ -12,7 +12,8 @@
     "watch": "NODE_OPTIONS=--openssl-legacy-provider webpack --config dev/webpack/webpack.dev.js",
     "test": "eslint --format codeframe --ext .js,.vue . && pug-lint server/views && jest",
     "cypress:open": "cypress open",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "watch:raw": "webpack --config dev/webpack/webpack.dev.js --watch"
   },
   "repository": {
     "type": "git",
