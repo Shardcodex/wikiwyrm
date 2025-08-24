@@ -40,6 +40,7 @@ type PageQuery {
     locale: String
     creatorId: Int
     authorId: Int
+    category: String
   ): [PageListItem!]! @auth(requires: ["manage:system", "read:pages"])
 
   single(
@@ -98,6 +99,7 @@ type PageMutation {
     scriptJs: String
     tags: [String]!
     title: String!
+    category: String
   ): PageResponse @auth(requires: ["write:pages", "manage:pages", "manage:system"])
 
   update(
@@ -115,6 +117,7 @@ type PageMutation {
     scriptJs: String
     tags: [String]
     title: String
+    category: String
   ): PageResponse @auth(requires: ["write:pages", "manage:pages", "manage:system"])
 
   convert(
@@ -191,6 +194,7 @@ type Page {
   publishStartDate: Date! @auth(requires: ["write:pages", "manage:system"])
   publishEndDate: Date! @auth(requires: ["write:pages", "manage:system"])
   tags: [PageTag]!
+  category: String
   content: String! @auth(requires: ["read:source", "write:pages", "manage:system"])
   render: String
   toc: String
@@ -245,6 +249,7 @@ type PageVersion {
   publishEndDate: Date!
   publishStartDate: Date!
   tags: [String]!
+  category: String
   title: String!
   versionId: Int!
 }
@@ -266,6 +271,8 @@ type PageSearchResult {
   description: String!
   path: String!
   locale: String!
+  tags: [String!]!
+  category: String
 }
 
 type PageListItem {
@@ -281,6 +288,7 @@ type PageListItem {
   createdAt: Date!
   updatedAt: Date!
   tags: [String]
+  category: String
 }
 
 type PageTreeItem {
@@ -314,6 +322,7 @@ type PageConflictLatest {
   locale: String!
   path: String!
   tags: [String]
+  category: String
   title: String!
   updatedAt: Date!
 }

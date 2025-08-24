@@ -68,7 +68,7 @@
                     )
           v-divider
           v-card-text.grey.pt-5(:class='$vuetify.theme.dark ? `darken-3-d5` : `lighten-4`')
-            .overline.pb-5 {{$t('editor:props.categorization')}}
+            .overline.pb-5 Tags
             v-chip-group.radius-5.mb-5(column, v-if='tags && tags.length > 0')
               v-chip(
                 v-for='tag of tags'
@@ -90,6 +90,14 @@
               hide-no-data
               :search-input.sync='newTagSearch'
               )
+          v-select(
+            class='mt-4'
+            v-model='category'
+            :items='categories'
+            label='Category'
+            outlined
+            dense
+          )
         v-tab-item(transition='fade-transition', reverse-transition='fade-transition')
           v-card-text
             .overline {{$t('editor:props.publishState')}}
@@ -276,11 +284,20 @@ export default {
       currentTab: 0,
       cm: null,
       rules: {
-          required: value => !!value || 'This field is required.',
-          path: value => {
-            return filenamePattern.test(value) || 'Invalid path. Please ensure it does not contain special characters, or begin/end in a slash or hashtag string.'
-          }
-      }
+        required: value => !!value || 'This field is required.',
+        path: value => {
+          return filenamePattern.test(value) || 'Invalid path. Please ensure it does not contain special characters, or begin/end in a slash or hashtag string.'
+        }
+      },
+      categories: [
+        'Characters',
+        'Locations',
+        'Items',
+        'Factions',
+        'Magic',
+        'Languages',
+        'Other'
+      ]
     }
   },
   computed: {
@@ -293,6 +310,7 @@ export default {
     description: sync('page/description'),
     locale: sync('page/locale'),
     tags: sync('page/tags'),
+    category: sync('page/meta@category'),
     path: sync('page/path'),
     isPublished: sync('page/isPublished'),
     publishStartDate: sync('page/publishStartDate'),

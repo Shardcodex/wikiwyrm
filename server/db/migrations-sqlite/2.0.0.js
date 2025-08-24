@@ -110,7 +110,7 @@ exports.up = knex => {
       table.string('contentType').notNullable()
       table.string('createdAt').notNullable()
       table.string('action').defaultTo('updated')
-
+      table.string('category').notNullable().defaultTo('Other')
       table.integer('pageId').unsigned()
       table.string('editorKey').references('key').inTable('editors')
       table.string('localeCode', 5).references('code').inTable('locales')
@@ -139,6 +139,7 @@ exports.up = knex => {
       table.text('render')
       table.json('toc')
       table.string('contentType').notNullable()
+      table.string('category').notNullable().defaultTo('Other')
       table.string('createdAt').notNullable()
       table.string('updatedAt').notNullable()
 

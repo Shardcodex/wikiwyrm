@@ -34,6 +34,18 @@
           )
           v-icon(color='blue', :left='$vuetify.breakpoint.lgAndUp') mdi-tag-text-outline
           span.white--text(v-if='$vuetify.breakpoint.lgAndUp') {{ $t('common:actions.page') }}
+        v-btn.animated.fadeInDown.wait-p3s(
+        text
+        color='teal'
+        :class='{ "is-icon": $vuetify.breakpoint.mdAndDown }'
+        v-on='on'
+        @click='$root.$emit("open-infobox-drawer")'
+        :aria-label="$t(`editor:infobox.open`)"
+      )
+        v-icon(color='teal', :left='$vuetify.breakpoint.lgAndUp') mdi-table-edit
+        span.white--text(v-if='$vuetify.breakpoint.lgAndUp') Infobox
+    span {{$t('editor:infobox.open')}}
+      v-divider.ml-3(vertical)
         v-btn.animated.fadeInDown.wait-p2s(
           v-if='!welcomeMode'
           text
@@ -43,7 +55,6 @@
           )
           v-icon(color='red', :left='$vuetify.breakpoint.lgAndUp') mdi-close
           span.white--text(v-if='$vuetify.breakpoint.lgAndUp') {{ $t('common:actions.close') }}
-        v-divider.ml-3(vertical)
     v-main
       component(:is='currentEditor', :save='save')
       editor-modal-properties(v-model='dialogProps')
@@ -306,6 +317,7 @@ export default {
                 $scriptJs: String
                 $tags: [String]!
                 $title: String!
+                $category: String
               ) {
                 pages {
                   create(
@@ -322,6 +334,7 @@ export default {
                     scriptJs: $scriptJs
                     tags: $tags
                     title: $title
+                    category: $category
                   ) {
                     responseResult {
                       succeeded
@@ -350,7 +363,8 @@ export default {
               scriptCss: this.$store.get('page/scriptCss'),
               scriptJs: this.$store.get('page/scriptJs'),
               tags: this.$store.get('page/tags'),
-              title: this.$store.get('page/title')
+              title: this.$store.get('page/title'),
+              category: this.$store.get('page/category')
             }
           })
           resp = _.get(resp, 'data.pages.create', {})
@@ -410,6 +424,7 @@ export default {
                 $scriptJs: String
                 $tags: [String]
                 $title: String
+                $category: String
               ) {
                 pages {
                   update(
@@ -427,6 +442,7 @@ export default {
                     scriptJs: $scriptJs
                     tags: $tags
                     title: $title
+                    category: $category
                   ) {
                     responseResult {
                       succeeded
@@ -455,7 +471,8 @@ export default {
               scriptCss: this.$store.get('page/scriptCss'),
               scriptJs: this.$store.get('page/scriptJs'),
               tags: this.$store.get('page/tags'),
-              title: this.$store.get('page/title')
+              title: this.$store.get('page/title'),
+              category: this.$store.get('page/category')
             }
           })
           resp = _.get(resp, 'data.pages.update', {})

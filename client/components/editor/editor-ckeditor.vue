@@ -12,6 +12,10 @@
         .caption {{$t('editor:ckeditor.stats', { chars: stats.characters, words: stats.words })}}
     editor-conflict(v-model='isConflict', v-if='isConflict')
     page-selector(mode='select', v-model='insertLinkDialog', :open-handler='insertLinkHandler', :path='path', :locale='locale')
+    infobox-drawer(
+    v-model="drawer"
+    @insert="insertInfobox"
+     )
 </template>
 
 <script>
@@ -21,12 +25,14 @@ import DecoupledEditor from '@requarks/ckeditor5'
 // import DecoupledEditor from '../../../../wiki-ckeditor5/build/ckeditor'
 import EditorConflict from './ckeditor/conflict.vue'
 import { html as beautify } from 'js-beautify/js/lib/beautifier.min.js'
+import InfoboxDrawer from '@/components/editor/infobox/InfoboxDrawer.vue'
 
 /* global siteLangs */
 
 export default {
   components: {
-    EditorConflict
+    EditorConflict,
+    InfoboxDrawer
   },
   props: {
     save: {
@@ -36,6 +42,7 @@ export default {
   },
   data() {
     return {
+      drawer: false,
       editor: null,
       stats: {
         characters: 0,
@@ -55,12 +62,17 @@ export default {
     activeModal: sync('editor/activeModal')
   },
   methods: {
+    insertInfobox(markup) {
+    // insert at current position
+      this.editor.execute('input', { text: '\n' + markup + '\n' })
+    },
     insertLink () {
       this.insertLinkDialog = true
     },
     insertLinkHandler ({ locale, path }) {
       this.editor.execute('link', siteLangs.length > 0 ? `/${locale}/${path}` : `/${path}`)
-    }
+    },
+    openInfobox() { window.dispatchEvent(new Event('open-infobox-drawer')) }
   },
   async mounted () {
     this.$store.set('editor/editorKey', 'ckeditor')
@@ -130,6 +142,10 @@ export default {
     })
     this.$root.$on('overwriteEditorContent', () => {
       this.editor.setData(this.$store.get('editor/content'))
+    })
+    this.$root.$on('open-infobox-drawer', () => {
+      this.drawer = true
+      this.tab = 0
     })
   },
   beforeDestroy () {
