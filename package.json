@@ -1,9 +1,9 @@
 {
-  "name": "wiki",
+  "name": "wikiwyrm",
   "version": "2.0.0",
   "releaseDate": "2019-01-01T01:01:01.000Z",
   "description": "A modern, lightweight and powerful wiki app built on NodeJS, Git and Markdown",
-  "main": "wiki.js",
+  "main": "WikiWyrm",
   "dev": true,
   "scripts": {
     "start": "node server",
@@ -28,7 +28,7 @@
     "guides",
     "knowledge base"
   ],
-  "author": "Nicolas Giard",
+  "author": "Shardcodex",
   "license": "AGPL-3.0",
   "bugs": {
     "url": "https://github.com/Requarks/wiki/issues"
@@ -91,6 +91,7 @@
     "graphql-rate-limit-directive": "1.2.1",
     "graphql-subscriptions": "1.1.0",
     "graphql-tools": "7.0.0",
+    "graphql-type-json": "0.3.2",
     "he": "1.2.0",
     "highlight.js": "10.3.1",
     "i18next": "19.8.3",

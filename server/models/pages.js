@@ -47,7 +47,7 @@ module.exports = class Page extends Model {
         publishEndDate: {type: 'string'},
         content: {type: 'string'},
         contentType: {type: 'string'},
-
+        category: {type: 'string'},
         createdAt: {type: 'string'},
         updatedAt: {type: 'string'}
       }
@@ -162,7 +162,8 @@ module.exports = class Page extends Model {
       },
       title: 'string',
       toc: 'string',
-      updatedAt: 'string'
+      updatedAt: 'string',
+      category: 'string'
     })
   }
 
@@ -312,6 +313,7 @@ module.exports = class Page extends Model {
       publishStartDate: opts.publishStartDate || '',
       title: opts.title,
       toc: '[]',
+      category: opts.category || 'Other',
       extra: JSON.stringify({
         js: scriptJs,
         css: scriptCss
@@ -999,6 +1001,7 @@ module.exports = class Page extends Model {
           'pages.localeCode',
           'pages.authorId',
           'pages.creatorId',
+          'pages.category',
           'pages.extra',
           {
             authorName: 'author.name',
@@ -1037,6 +1040,15 @@ module.exports = class Page extends Model {
         //   }
         // })
         .first()
+        .then(page => {
+          if (page) {
+            if (typeof page.category !== 'string') {
+              console.warn(`DEBUG: Missing category for page ID ${page.id}, path ${page.path}`)
+              page.category = 'Other'
+            }
+          }
+          return page
+        })
     } catch (err) {
       WIKI.logger.warn(err)
       throw err
@@ -1073,7 +1085,8 @@ module.exports = class Page extends Model {
       tags: page.tags.map(t => _.pick(t, ['tag', 'title'])),
       title: page.title,
       toc: _.isString(page.toc) ? page.toc : JSON.stringify(page.toc),
-      updatedAt: page.updatedAt
+      updatedAt: page.updatedAt,
+      category: page.category || 'Other'
     }))
   }
 

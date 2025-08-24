@@ -1,6 +1,6 @@
 const _ = require('lodash')
 const graphHelper = require('../../helpers/graph')
-
+const GraphQLJSON = require('graphql-type-json')
 /* global WIKI */
 
 module.exports = {

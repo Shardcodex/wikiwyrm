@@ -123,6 +123,10 @@ module.exports = {
     this.servers.graph = new ApolloServer({
       ...graphqlSchema,
       context: ({ req, res }) => ({ req, res }),
+      formatError: (err) => {
+        console.error('GraphQL Error:', err)
+        return err
+      },
       subscriptions: {
         onConnect: (connectionParams, webSocket) => {
 

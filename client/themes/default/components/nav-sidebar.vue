@@ -1,5 +1,5 @@
 <template lang="pug">
-  div
+ div
     .pa-3.d-flex(v-if='navMode === `MIXED`', :class='$vuetify.theme.dark ? `grey darken-5` : `blue darken-3`')
       v-btn(
         depressed
@@ -30,19 +30,7 @@
     v-divider
     //-> Custom Navigation
     v-list.py-2(v-if='currentMode === `custom`', dense, :class='color', :dark='dark')
-      template(v-for='item of items')
-        v-list-item(
-          v-if='item.k === `link`'
-          :href='item.t'
-          :target='item.y === `externalblank` ? `_blank` : `_self`'
-          :rel='item.y === `externalblank` ? `noopener` : ``'
-          )
-          v-list-item-avatar(size='24', tile)
-            v-icon(v-if='item.c.match(/fa[a-z] fa-/)', size='19') {{ item.c }}
-            v-icon(v-else) {{ item.c }}
-          v-list-item-title {{ item.l }}
-        v-divider.my-2(v-else-if='item.k === `divider`')
-        v-subheader.pl-4(v-else-if='item.k === `header`') {{ item.l }}
+      CategorySidebar
     //-> Browse
     v-list.py-2(v-else-if='currentMode === `browse`', dense, :class='color', :dark='dark')
       template(v-if='currentParent.id > 0')
@@ -71,6 +59,7 @@
 import _ from 'lodash'
 import gql from 'graphql-tag'
 import { get } from 'vuex-pathify'
+import CategorySidebar from '@/themes/default/components/CategorySidebar.vue'
 
 /* global siteLangs */
 
@@ -92,6 +81,9 @@ export default {
       type: String,
       default: 'MIXED'
     }
+  },
+  components: {
+    CategorySidebar
   },
   data() {
     return {

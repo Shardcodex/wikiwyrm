@@ -85,7 +85,8 @@ module.exports = {
         'privateNS',
         'contentType',
         'createdAt',
-        'updatedAt'
+        'updatedAt',
+        'category'
       ])
         .withGraphJoined('tags')
         .modifyGraph('tags', builder => {
@@ -113,6 +114,9 @@ module.exports = {
           if (args.tags && args.tags.length > 0) {
             queryBuilder.whereIn('tags.tag', args.tags.map(t => _.trim(t).toLowerCase()))
           }
+          if (args.category) {
+            queryBuilder.where('category', args.category)
+          }
           const orderDir = args.orderByDirection === 'DESC' ? 'desc' : 'asc'
           switch (args.orderBy) {
             case 'CREATED':
@@ -139,7 +143,8 @@ module.exports = {
         })
       }).map(r => ({
         ...r,
-        tags: _.map(r.tags, 'tag')
+        tags: _.map(r.tags, 'tag'),
+        category: typeof r.category === 'string' ? r.category : 'Other'
       }))
       if (args.tags && args.tags.length > 0) {
         results = _.filter(results, r => _.every(args.tags, t => _.includes(r.tags, t)))
@@ -159,6 +164,7 @@ module.exports = {
           return {
             ...page,
             locale: page.localeCode,
+            category: page.category || 'Other',
             editor: page.editorKey,
             scriptJs: page.extra.js,
             scriptCss: page.extra.css
@@ -173,8 +179,9 @@ module.exports = {
     async singleByPath(obj, args, context, info) {
       let page = await WIKI.models.pages.getPageFromDb({
         path: args.path,
-        locale: args.locale,
-      });
+        locale: args.locale
+      })
+      console.warn('DEBUG singleByPath page:', page)
       if (page) {
         if (WIKI.auth.checkAccess(context.req.user, ['manage:pages', 'delete:pages'], {
           path: page.path,
@@ -184,6 +191,7 @@ module.exports = {
             ...page,
             locale: page.localeCode,
             editor: page.editorKey,
+            category: page.category || 'Other',
             scriptJs: page.extra.js,
             scriptCss: page.extra.css
           }
@@ -627,5 +635,10 @@ module.exports = {
     // comments(pg) {
     //   return pg.$relatedQuery('comments')
     // }
+  },
+  PageSearchResult: {
+    // meta: (page) => page.meta || {},
+    category: (page) => typeof page.category === 'string' ? page.category : 'Other',
+    tags: (page) => page.tags || []
   }
 }

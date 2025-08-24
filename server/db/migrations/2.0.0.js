@@ -128,6 +128,7 @@ exports.up = knex => {
       table.text('content')
       table.string('contentType').notNullable()
       table.string('createdAt').notNullable()
+      table.string('category').notNullable().defaultTo('Other')
     })
     // PAGE LINKS --------------------------
     .createTable('pageLinks', table => {
@@ -167,6 +168,7 @@ exports.up = knex => {
       }
       table.json('toc')
       table.string('contentType').notNullable()
+      table.string('category').notNullable().defaultTo('Other')
       table.string('createdAt').notNullable()
       table.string('updatedAt').notNullable()
     })
