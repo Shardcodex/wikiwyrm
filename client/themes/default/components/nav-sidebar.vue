@@ -17,7 +17,7 @@
         @click='switchMode(`browse`)'
         )
         v-icon(left) mdi-file-tree
-        .body-2.text-none {{$t('common:sidebar.browse')}}
+        .body-2.text-none 'The Hoard'
       v-btn.ml-3(
         v-else-if='currentMode === `browse`'
         depressed
@@ -30,7 +30,10 @@
     v-divider
     //-> Custom Navigation
     v-list.py-2(v-if='currentMode === `custom`', dense, :class='color', :dark='dark')
+      FavoritesSidebar(:limit="10")
+      LastUpdated(:limit="10")
       CategorySidebar
+      Shortcuts
     //-> Browse
     v-list.py-2(v-else-if='currentMode === `browse`', dense, :class='color', :dark='dark')
       template(v-if='currentParent.id > 0')
@@ -60,6 +63,9 @@ import _ from 'lodash'
 import gql from 'graphql-tag'
 import { get } from 'vuex-pathify'
 import CategorySidebar from '@/themes/default/components/CategorySidebar.vue'
+import FavoritesSidebar from '@/themes/default/components/FavoritesSidebar.vue'
+import LastUpdated from '@/themes/default/components/LastUpdated.vue'
+import Shortcuts from '@/themes/default/components/Shortcuts.vue'
 
 /* global siteLangs */
 
@@ -83,7 +89,10 @@ export default {
     }
   },
   components: {
-    CategorySidebar
+    CategorySidebar,
+    FavoritesSidebar,
+    LastUpdated,
+    Shortcuts
   },
   data() {
     return {

@@ -1,103 +1,214 @@
-<template>
-  <div class="category-sidebar">
-    <h4 class="sidebar-heading">
-      Categories
-    </h4>
+<template lang="pug">
+  v-list.dense.nav-quick
+    v-subheader.pl-4 Categories
 
-    <ul class="sidebar-list">
-      <li
-        v-for="cat in visibleCategories"
-        :key="cat.name"
-      >
-        <div class="cat-row">
-          <span class="cat-name">{{ cat.name }}</span>
-          <span class="cat-count">({{ cat.pages.length }})</span>
-        </div>
+    v-list-group(
+      v-for="cat in categoriesWithCounts"
+      :key="cat.name"
+      no-action
+      :disabled="isEmpty(cat.name)"
+      :prepend-icon="iconFor(cat.name)"
+      append-icon=""
+      :value="!isEmpty(cat.name) && isGroupOpen(cat.name)"
+      :class="{ 'is-disabled': isEmpty(cat.name) }"
+      @click:active="!isEmpty(cat.name) && toggleGroup(cat.name)"
+    )
+      template(v-slot:activator)
+        v-list-item-content
+          v-list-item-title {{ cat.name }}
+        v-spacer
+        v-chip.count-chip(
+          x-small
+          outlined
+          :class="{ 'empty-chip': isEmpty(cat.name) }"
+        ) {{ cat.count }}
 
-        <ul class="page-list">
-          <li
-            v-for="p in cat.pages"
-            :key="p.id"
-          >
-            <a :href="pageHref(p)">{{ p.title || p.path }}</a>
-          </li>
-        </ul>
-      </li>
-    </ul>
-  </div>
+      // children (only render when not empty)
+      template(v-if="!isEmpty(cat.name)")
+        v-list-item.quick-link(
+          v-for="p in pagesByCategory[cat.name]"
+          :key="p.id"
+          tag="a"
+          :href="linkFor(p)"
+          :ripple="false"
+        )
+          v-list-item-content
+            v-list-item-title {{ p.title || p.path }}
 </template>
 
 <script>
 import gql from 'graphql-tag'
 
-// Use pages.list (lighter than search) and include path + category.
-const LIST_PAGES = gql`
-  query($locale: String) {
+// Use SEARCH because it already works in your app and doesn’t depend on your new list args
+const QUERY = gql`
+  query {
     pages {
-      list(locale: $locale, limit: 1000) {
-        id
-        title
-        path
-        category
+      search(query: "") {
+        results {
+          id
+          path
+          title
+          category
+        }
       }
     }
   }
 `
 
 export default {
-  data() {
+  name: 'CategorySidebar',
+  data () {
     return {
-      locale: (window?.CONFIG?.lang?.code) || 'en',
-      categories: ['Characters', 'Locations', 'Items', 'Factions', 'Magic', 'Languages', 'Other'],
-      pages: []
+      allPages: [],
+      openGroups: {},
+      categoriesMaster: [
+        'Characters', 'Locations', 'Items', 'Factions', 'Magic', 'Languages', 'Other'
+      ],
+      iconMap: {
+        Characters: { full: 'mdi-account-group', empty: 'mdi-account-outline' },
+        Locations: { full: 'mdi-map-marker-radius', empty: 'mdi-map-marker-outline' },
+        Items: { full: 'mdi-sword', empty: 'mdi-sword-cross' },
+        Factions: { full: 'mdi-shield-account', empty: 'mdi-shield-outline' },
+        Magic: { full: 'mdi-auto-fix', empty: 'mdi-auto-fix' },
+        Languages: { full: 'mdi-alphabet-greek', empty: 'mdi-alphabet-greek' },
+        Other: { full: 'mdi-folder', empty: 'mdi-folder-outline' }
+      },
+      locale: 'en'
     }
   },
   computed: {
-    // Group pages by category; only show categories that have at least one page
-    visibleCategories() {
-      const byCat = new Map(this.categories.map(c => [c, []]))
-      for (const p of this.pages) {
-        const cat = (p.category && this.categories.includes(p.category)) ? p.category : 'Other'
-        byCat.get(cat).push(p)
+    pagesByCategory () {
+      const byCat = {}
+      for (const p of (this.allPages || [])) {
+        const cat = (p.category && typeof p.category === 'string') ? p.category : 'Other'
+        if (!byCat[cat]) byCat[cat] = []
+        byCat[cat].push(p)
       }
-      return this.categories
-        .map(name => ({ name, pages: byCat.get(name) || [] }))
-        .filter(c => c.pages.length > 0)
+      // ensure all masters exist
+      for (const name of this.categoriesMaster) {
+        if (!byCat[name]) byCat[name] = []
+      }
+      // optional sort
+      Object.keys(byCat).forEach(k => byCat[k].sort((a, b) => (a.title || '').localeCompare(b.title || '')))
+      return byCat
+    },
+    categoriesWithCounts () {
+      return this.categoriesMaster.map(name => ({
+        name,
+        count: (this.pagesByCategory[name] || []).length
+      }))
     }
   },
-  async mounted() {
+
+  methods: {
+    isGroupOpen (name) {
+      return !!this.openGroups[name]
+    },
+    toggleGroup (name) {
+      const next = !this.isGroupOpen(name)
+      if (this.$set) this.$set(this.openGroups, name, next)
+      else this.openGroups[name] = next
+    },
+    iconFor (name) {
+      const map = this.iconMap[name] || { full: 'mdi-folder', empty: 'mdi-folder-outline' }
+      const hasPages = !!(this.pagesByCategory &&
+        Array.isArray(this.pagesByCategory[name]) &&
+        this.pagesByCategory[name].length)
+      return hasPages ? map.full : map.empty
+    },
+    isEmpty (name) {
+      const arr = this.pagesByCategory && this.pagesByCategory[name]
+      return !arr || arr.length === 0
+    },
+    linkFor (p) {
+      const storeLocale = this.$store?.state?.i18n?.locale
+      const urlLocale =
+        p.locale ||
+        storeLocale ||
+        (typeof window !== 'undefined' ?
+          (window.location.pathname.split('/')[1] || 'en') :
+          'en')
+      return `/${urlLocale}/${p.path}`
+    },
+
+    async loadPages () {
+      try {
+        this.loading = true
+        this.error = null
+        // .. your existing GraphQL fetch that fills this.allPages ..
+      } catch (e) {
+        console.error('CategorySidebar fetch failed:', e)
+        this.error = e
+      } finally {
+        this.loading = false
+      }
+    }
+  },
+  async mounted () {
     try {
+      const loc =
+        (this.$store && this.$store.state && this.$store.state.i18n && this.$store.state.i18n.locale) ||
+        'en'
+      this.locale = loc
+
       const { data } = await this.$apollo.query({
-        query: LIST_PAGES,
-        variables: { locale: this.locale },
+        query: QUERY,
         fetchPolicy: 'network-only'
       })
-      // Defensive normalize: ensure path/title exist
-      this.pages = (data?.pages?.list || [])
-        .filter(p => p && p.path) // need path to link
-        .map(p => ({ ...p, title: p.title || p.path, category: p.category || 'Other' }))
-        .sort((a, b) => (a.title || '').localeCompare(b.title || ''))
-    } catch (err) {
-      console.error('CategorySidebar: failed to load pages:', err)
-      this.pages = []
-    }
-  },
-  methods: {
-    pageHref(p) {
-      return `/${this.locale}/${p.path}`
+
+      const list = ((((data || {}).pages || {}).search || {}).results) || []
+      // dev log: see what you actually got
+      console.log('[CategorySidebar] results:', list)
+
+      // normalize
+      this.allPages = list.map(r => ({
+        id: r.id,
+        path: r.path,
+        title: r.title,
+        category: (r.category && typeof r.category === 'string') ? r.category : 'Other'
+      }))
+    } catch (e) {
+      console.error('CategorySidebar fetch failed:', e)
+      this.allPages = []
     }
   }
 }
 </script>
 
 <style scoped>
-.category-sidebar { padding: 1rem; }
-.sidebar-heading { font-weight: 600; margin: .5rem 0 .25rem; }
-.sidebar-list, .page-list { list-style: none; padding: 0; margin: 0; }
-.cat-row { margin: .5rem 0 .25rem; }
-.cat-name { font-weight: 600; }
-.cat-count { opacity: .6; margin-left: .25rem; }
-.page-list > li { margin: .125rem 0; }
-.page-list a { text-decoration: none; }
-.page-list a:hover { text-decoration: underline; }
+.nav-quick .v-list-item__title {
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: unset;
+}
+.nav-quick .v-list-item__content {
+  min-width: 0;            /* important for Vuetify flex layouts */
+}
+.quick-link { padding-left: 8px; }
+.v-list-group__header--active ~ .count-chip,
+.v-list-group__header .count-chip {
+  margin-right: 12px;
+}
+.v-list-group[disabled] .v-list-item-title { opacity: .6; }
+/* grey out the whole group when empty */
+.is-disabled {
+  opacity: 0.55;
+}
+
+/* make disabled header clearly non-interactive */
+.is-disabled .v-list-group__header {
+  cursor: not-allowed;
+  pointer-events: none; /* prevents opening */
+}
+
+/* faint chip for empty groups */
+.count-chip.empty-chip {
+  opacity: 0.75;
+}
+
+/* (optional) hide the caret when empty if any slips through */
+.is-disabled .v-list-group__header .v-list-group__header__append-icon,
+.is-disabled .v-list-group__header .v-icon--right {
+  display: none !important;
+}
 </style>
