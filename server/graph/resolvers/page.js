@@ -86,7 +86,8 @@ module.exports = {
         'contentType',
         'createdAt',
         'updatedAt',
-        'category'
+        'category',
+        'featured'
       ])
         .withGraphJoined('tags')
         .modifyGraph('tags', builder => {
@@ -117,6 +118,9 @@ module.exports = {
           if (args.category) {
             queryBuilder.where('category', args.category)
           }
+          if (args.filter && typeof args.filter.featured === 'boolean') {
+            queryBuilder.where('featured', args.filter.featured ? 1 : 0)
+          }
           const orderDir = args.orderByDirection === 'DESC' ? 'desc' : 'asc'
           switch (args.orderBy) {
             case 'CREATED':
@@ -144,7 +148,8 @@ module.exports = {
       }).map(r => ({
         ...r,
         tags: _.map(r.tags, 'tag'),
-        category: typeof r.category === 'string' ? r.category : 'Other'
+        category: typeof r.category === 'string' ? r.category : 'Other',
+        featured: (r.featured === 1 || r.featured === true)
       }))
       if (args.tags && args.tags.length > 0) {
         results = _.filter(results, r => _.every(args.tags, t => _.includes(r.tags, t)))

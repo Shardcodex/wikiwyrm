@@ -48,6 +48,7 @@ module.exports = class Page extends Model {
         content: {type: 'string'},
         contentType: {type: 'string'},
         category: {type: 'string'},
+        featured: { type: 'boolean' },
         createdAt: {type: 'string'},
         updatedAt: {type: 'string'}
       }
@@ -163,7 +164,8 @@ module.exports = class Page extends Model {
       title: 'string',
       toc: 'string',
       updatedAt: 'string',
-      category: 'string'
+      category: 'string',
+      featured: 'boolean'
     })
   }
 
@@ -314,6 +316,7 @@ module.exports = class Page extends Model {
       title: opts.title,
       toc: '[]',
       category: opts.category || 'Other',
+      featured: opts.featured === true ? 1 : 0,
       extra: JSON.stringify({
         js: scriptJs,
         css: scriptCss
@@ -432,6 +435,7 @@ module.exports = class Page extends Model {
       isPublished: opts.isPublished === true || opts.isPublished === 1,
       publishEndDate: opts.publishEndDate || '',
       publishStartDate: opts.publishStartDate || '',
+      featured: _.isBoolean(opts.featured) ? (opts.featured ? 1 : 0) : ogPage.featured,
       title: opts.title,
       extra: JSON.stringify({
         ...ogPage.extra,
@@ -1002,6 +1006,7 @@ module.exports = class Page extends Model {
           'pages.authorId',
           'pages.creatorId',
           'pages.category',
+          'pages.featured',
           'pages.extra',
           {
             authorName: 'author.name',
@@ -1086,7 +1091,8 @@ module.exports = class Page extends Model {
       title: page.title,
       toc: _.isString(page.toc) ? page.toc : JSON.stringify(page.toc),
       updatedAt: page.updatedAt,
-      category: page.category || 'Other'
+      category: page.category || 'Other',
+      featured: (page.featured === 1 || page.featured === true)
     }))
   }
 

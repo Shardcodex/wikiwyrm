@@ -22,6 +22,8 @@ query($id: Int!) {
       creatorId
       creatorName
       creatorEmail
+      category
+      favorite
     }
   }
 }

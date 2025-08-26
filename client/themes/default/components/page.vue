@@ -58,9 +58,17 @@
             style='margin-top: auto; margin-bottom: auto;'
             :class='$vuetify.rtl ? `pr-4` : `pl-4`'
             )
-            .page-header-headings
-              .headline.grey--text(:class='$vuetify.theme.dark ? `text--lighten-2` : `text--darken-3`') {{title}}
-              .caption.grey--text.text--darken-1 {{description}}
+            .page-header-headings.d-flex.align-center
+              v-btn.icon.mr-3(
+                :loading="favBusy"
+                :disabled="favBusy"
+                :aria-label="featured ? 'Unfeature' : 'Feature'"
+                @click.stop.prevent="toggleFeatured"
+              )
+                v-icon(small) {{ featured ? 'mdi-heart' : 'mdi-heart-outline' }}
+              .page-header-titles
+                .headline.grey--text(:class='$vuetify.theme.dark ? `text--lighten-2` : `text--darken-3`') {{title}}
+                .caption.grey--text.text--darken-1 {{description}}
             .page-edit-shortcuts(
               v-if='editShortcutsObj.editMenuBar'
               :class='tocPosition === `right` ? `is-right` : ``'
@@ -157,7 +165,7 @@
                         outlined
                         small
                         :color='$vuetify.theme.dark ? `blue-grey` : `blue-grey darken-2`'
-                        :aria-label='$t(`common:comments.newComment`)'
+                        :aria-label= 'Favorite'
                         )
                         v-icon(:color='$vuetify.theme.dark ? `blue-grey lighten-1` : `blue-grey darken-2`', dense) mdi-comment-plus
                     span {{$t('common:comments.newComment')}}
@@ -367,6 +375,18 @@ import { get, sync } from 'vuex-pathify'
 import _ from 'lodash'
 import ClipboardJS from 'clipboard'
 import Vue from 'vue'
+import gql from 'graphql-tag'
+
+const TOGGLE_FEATURED = gql`
+  mutation ToggleFeatured($id: Int!, $featured: Boolean!) {
+    pages {
+      update(id: $id, featured: $featured) {
+        responseResult { succeeded message }
+        page { id featured }
+      }
+    }
+  }
+`
 
 Vue.component('Tabset', Tabset)
 
@@ -438,6 +458,7 @@ export default {
       navExpanded: false,
       upBtnShown: false,
       pageEditFab: false,
+      favLoading: false,
       scrollOpts: {
         duration: 1500,
         offset: 0,
@@ -473,6 +494,9 @@ export default {
     commentsCount: get('page/commentsCount'),
     commentsPerms: get('page/effectivePermissions@comments'),
     editShortcutsObj: get('page/editShortcuts'),
+    page () { return this.$store?.state?.page || {} },
+    featured () { return !!this.page.featured },
+    pageId () { return this.page.id },
     rating: {
       get () { return 3.5 },
       set (val) {}
@@ -582,6 +606,33 @@ export default {
     this.extractInfobox()
   },
   methods: {
+    async toggleFeatured () {
+      if (this.favBusy) return
+      this.favBusy = true
+      try {
+        const { data } = await this.$apollo.mutate({
+          mutation: gql`
+            mutation ToggleFeatured($id:Int!, $featured:Boolean) {
+              pages {
+                update(id:$id, featured:$featured) {
+                  responseResult { succeeded message }
+                  page { id featured }
+                }
+              }
+            }`,
+          variables: { id: this.pageId, featured: !this.featured }
+        })
+        const ok = data?.pages?.update?.responseResult?.succeeded
+        if (ok) this.featured = !this.featured
+        else console.error('ToggleFeatured failed:', data?.pages?.update?.responseResult?.message)
+      } catch (err) {
+        console.error('ToggleFeatured error:', err)
+        this.$toast && this.$toast.error('Failed to update favorite')
+      } finally {
+        // IMPORTANT: stop spinner even if there was an error
+        this.favBusy = false
+      }
+    },
     goHome () { window.location.assign('/') },
     toggleNavigation () { this.navOpen = !this.navOpen },
     upBtnScroll () {

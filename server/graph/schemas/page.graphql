@@ -1,4 +1,12 @@
 # ===============================================
+# INPUTS
+# ===============================================
+
+input PageListFilter {
+  featured: Boolean
+}
+
+# ===============================================
 # PAGES
 # ===============================================
 
@@ -41,6 +49,7 @@ type PageQuery {
     creatorId: Int
     authorId: Int
     category: String
+    filter: PageListFilter
   ): [PageListItem!]! @auth(requires: ["manage:system", "read:pages"])
 
   single(
@@ -100,6 +109,7 @@ type PageMutation {
     tags: [String]!
     title: String!
     category: String
+    featured: Boolean
   ): PageResponse @auth(requires: ["write:pages", "manage:pages", "manage:system"])
 
   update(
@@ -118,6 +128,7 @@ type PageMutation {
     tags: [String]
     title: String
     category: String
+    featured: Boolean
   ): PageResponse @auth(requires: ["write:pages", "manage:pages", "manage:system"])
 
   convert(
@@ -195,6 +206,7 @@ type Page {
   publishEndDate: Date! @auth(requires: ["write:pages", "manage:system"])
   tags: [PageTag]!
   category: String
+  featured: Boolean!
   content: String! @auth(requires: ["read:source", "write:pages", "manage:system"])
   render: String
   toc: String
@@ -289,6 +301,7 @@ type PageListItem {
   updatedAt: Date!
   tags: [String]
   category: String
+  featured: Boolean!
 }
 
 type PageTreeItem {

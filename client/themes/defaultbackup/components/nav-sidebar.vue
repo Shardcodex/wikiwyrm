@@ -17,7 +17,7 @@
         @click='switchMode(`browse`)'
         )
         v-icon(left) mdi-file-tree
-        .body-2.text-none 'The Hoard'
+        .body-2.text-none {{$t('common:sidebar.browse')}}
       v-btn.ml-3(
         v-else-if='currentMode === `browse`'
         depressed
