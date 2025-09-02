@@ -5,6 +5,7 @@
     @click:active="(val) => setGroup('favorites', val)"
     prepend-icon="mdi-heart"
     append-icon=""
+    :color="$vuetify.theme.dark ? 'white' : 'primary lighten-3'"
   )
     template(v-slot:activator)
       v-list-item-content
@@ -134,5 +135,9 @@ export default {
   margin-right: 8px;
 }
 
-/* optional: if you prefer single-line labels (no wrap), widen the drawer a bit */
+::v-deep .v-list-group--active > .v-list-group__header .header-row .v-list-item__title,
+::v-deep .v-list-group--active > .v-list-group__header .header-row .v-icon {
+  opacity: 1 !important;
+  color: white !important;   /* don’t force primary; use normal text color */
+}
 </style>

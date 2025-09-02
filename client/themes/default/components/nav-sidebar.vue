@@ -1,9 +1,9 @@
 <template lang="pug">
  div
-    .pa-3.d-flex(v-if='navMode === `MIXED`', :class='$vuetify.theme.dark ? `grey darken-5` : `blue darken-3`')
+    .pa-3.d-flex(v-if='navMode === `MIXED`', :class='$vuetify.theme.dark ? `grey darken-5` : `primary`')
       v-btn(
         depressed
-        :color='$vuetify.theme.dark ? `grey darken-4` : `blue darken-2`'
+        :color='$vuetify.theme.dark ? `grey darken-4` : `primary lighten-1`'
         style='min-width:0;'
         @click='goHome'
         :aria-label='$t(`common:header.home`)'
@@ -12,16 +12,16 @@
       v-btn.ml-3(
         v-if='currentMode === `custom`'
         depressed
-        :color='$vuetify.theme.dark ? `grey darken-4` : `blue darken-2`'
+        :color='$vuetify.theme.dark ? `grey darken-4` : `primary lighten-1`'
         style='flex: 1 1 100%;'
         @click='switchMode(`browse`)'
         )
-        v-icon(left) mdi-file-tree
-        .body-2.text-none 'The Hoard'
+        v-icon(left) mdi-earth
+        .body-2.text-none Worlds
       v-btn.ml-3(
         v-else-if='currentMode === `browse`'
         depressed
-        :color='$vuetify.theme.dark ? `grey darken-4` : `blue darken-2`'
+        :color='$vuetify.theme.dark ? `grey darken-4` : `primary lighten-1`'
         style='flex: 1 1 100%;'
         @click='switchMode(`custom`)'
         )

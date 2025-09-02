@@ -1,0 +1,51 @@
+:root {
+  --wwm-font-sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+
+  /* Light (parchment on white) */
+  --wwm-bg:        #f6f2e9;  /* parchment */
+  --wwm-surface:   #ffffff;
+  --wwm-text:      #1b1c1a;  /* near-black */
+  --wwm-muted:     #6e6b66;  /* warm gray */
+  --wwm-border:    rgba(27,28,26,.12);
+
+  /* Primary = muted moss */
+  --wwm-primary:       #24362b;  /* deep moss */
+  --wwm-primary-600:   #1d2c24;  /* hover/pressed */
+
+  /* Accent = brass */
+  --wwm-accent:        #b08d57;  /* brass */
+  --wwm-accent-600:    #966f2b;
+
+  --wwm-warning:       #c68e17;
+  --wwm-danger:        #8b2f2f;
+}
+
+/* Dark */
+html.theme--dark, .v-application.theme--dark {
+  --wwm-bg:        #121312;      /* charcoal */
+  --wwm-surface:   #181a19;      /* soft charcoal */
+  --wwm-text:      #e7e3dc;      /* warm off-white */
+  --wwm-muted:     #a49f95;
+  --wwm-border:    rgba(231,227,220,.12);
+
+  --wwm-primary:       #2f4638;  /* slightly lighter moss for dark surfaces */
+  --wwm-primary-600:   #3b5745;
+  --wwm-accent:        #c09a62;  /* brighter brass */
+  --wwm-accent-600:    #d1ad76;
+}
+
+/* Buttons / links / chips pick up tokens */
+.v-btn.primary { background: var(--wwm-primary)!important; color:#fff!important; }
+.v-btn.primary:hover { background: var(--wwm-primary-600)!important; }
+.v-btn--text { color: var(--wwm-accent)!important; }
+a { color: var(--wwm-accent); text-underline-offset: 2px; }
+a:hover { color: var(--wwm-accent-600); }
+
+.v-list-item--active { background: color-mix(in srgb, var(--wwm-primary) 14%, transparent); }
+.v-list-item--link:hover { background: color-mix(in srgb, var(--wwm-primary) 10%, transparent); }
+
+.v-chip { background: color-mix(in srgb, var(--wwm-primary) 12%, var(--wwm-surface)); }
+.wwm-search .v-input__slot { background: color-mix(in srgb, var(--wwm-primary) 12%, transparent); }
+
+/* Infobox still works; just warmer tones from tokens */
+.contents .infobox { border: 1px solid var(--wwm-border); border-radius: 10px; }

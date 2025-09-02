@@ -48,27 +48,42 @@
             .caption.red--text {{$t('common:page.unpublished')}}
             status-indicator.ml-3(negative, pulse)
         v-divider
-      v-container.grey.pa-0(fluid, :class='$vuetify.theme.dark ? `darken-4-l3` : `lighten-4`')
-        v-row.page-header-section(no-gutters, align-content='center', style='height: 90px;')
+      v-container.grey.pa-0(fluid, :class="$vuetify.theme.dark ? 'darken-4-l3' : 'lighten-4'")
+        v-row.page-header-section(no-gutters align="center" style="height: 90px;")
           v-col.page-col-content.is-page-header(
-            :offset-xl='tocPosition === `left` ? 2 : 0'
-            :offset-lg='tocPosition === `left` ? 3 : 0'
-            :xl='tocPosition === `right` ? 10 : false'
-            :lg='tocPosition === `right` ? 9 : false'
-            style='margin-top: auto; margin-bottom: auto;'
-            :class='$vuetify.rtl ? `pr-4` : `pl-4`'
-            )
-            .page-header-headings.d-flex.align-center
-              v-btn.icon.mr-3(
-                :loading="favBusy"
-                :disabled="favBusy"
-                :aria-label="featured ? 'Unfeature' : 'Feature'"
-                @click.stop.prevent="toggleFeatured"
-              )
-                v-icon(small) {{ featured ? 'mdi-heart' : 'mdi-heart-outline' }}
-              .page-header-titles
-                .headline.grey--text(:class='$vuetify.theme.dark ? `text--lighten-2` : `text--darken-3`') {{title}}
-                .caption.grey--text.text--darken-1 {{description}}
+            :offset-xl='tocPosition === "left" ? 2 : 0'
+            :offset-lg='tocPosition === "left" ? 3 : 0'
+            :xl='tocPosition === "right" ? 10 : false'
+            :lg='tocPosition === "right" ? 9 : false'
+            :class='$vuetify.rtl ? "pr-4" : "pl-4"'
+            style="margin-top: auto; margin-bottom: auto;"
+          )
+            // the bar that wraps on mobile
+            .d-flex.flex-wrap.align-center
+
+              // LEFT: headings — grows to fill, truncates nicely
+              .page-header-titles.flex-grow-1.min-w-0
+                .headline.grey--text(:class='$vuetify.theme.dark ? "text--lighten-2" : "text--darken-3"') {{ title }}
+                .caption.grey--text.text--darken-1 {{ description }}
+
+              // RIGHT: favorite — inline on md+, wraps below on xs/sm
+              .ml-auto.mt-2.mt-md-0
+                v-tooltip(left :open-delay="250" :close-delay="50")
+                  template(v-slot:activator="{ on, attrs }")
+                    v-btn.icon-btn(
+                      v-bind="attrs"
+                      v-on="on"
+                      :loading="favBusy"
+                      :disabled="favBusy"
+                      :aria-label="featured ? 'Unfavorite' : 'Favorite'"
+                      @click.stop.prevent="toggleFeatured"
+                      text icon elevation="0" :ripple="false"
+                    )
+                      v-icon(
+                        color='pink'
+                        :class="featured ? 'fav--on' : 'fav--off'") {{ featured ? 'mdi-heart' : 'mdi-heart-outline' }}
+                  span {{ featured ? 'Remove from Favorites' : 'Add to Favorites' }}
+
             .page-edit-shortcuts(
               v-if='editShortcutsObj.editMenuBar'
               :class='tocPosition === `right` ? `is-right` : ``'

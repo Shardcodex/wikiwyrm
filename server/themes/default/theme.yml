@@ -1,6 +1,6 @@
 name: Default
-author: requarks.io
-site: https://wiki.requarks.io/
+author: Shard
+site: https://wikiwyrm.com/
 version: 1.0.0
 requirements:
   minimum: '>= 2.0.0'
@@ -11,7 +11,7 @@ props:
     title: Accent Color
     hint: Color used in the sidebar navigation and other elements.
     order: 1
-    default: blue darken-2
+    default: primary darken-2
     control: color-material
   tocPosition:
     type: String

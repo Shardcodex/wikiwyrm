@@ -1,6 +1,6 @@
 <template lang="pug">
   v-list.dense.nav-quick
-    v-subheader.pl-4 Categories
+    v-subheader.pl-4 The Hoard
 
     v-list-group(
       v-for="cat in categoriesWithCounts"
@@ -12,6 +12,7 @@
       :value="!isEmpty(cat.name) && isGroupOpen(cat.name)"
       :class="{ 'is-disabled': isEmpty(cat.name) }"
       @click:active="!isEmpty(cat.name) && toggleGroup(cat.name)"
+      :color="$vuetify.theme.dark ? 'white' : 'primary lighten-3'"
     )
       template(v-slot:activator)
         v-list-item-content
@@ -210,5 +211,10 @@ export default {
 .is-disabled .v-list-group__header .v-list-group__header__append-icon,
 .is-disabled .v-list-group__header .v-icon--right {
   display: none !important;
+}
+::v-deep .v-list-group--active > .v-list-group__header .header-row .v-list-item__title,
+::v-deep .v-list-group--active > .v-list-group__header .header-row .v-icon {
+  opacity: 1 !important;
+  color: white !important;   /* don’t force primary; use normal text color */
 }
 </style>

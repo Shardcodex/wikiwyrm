@@ -5,6 +5,7 @@
     @click:active="(val) => setGroup('last', val)"
     prepend-icon="mdi-clock-outline"
     append-icon=""
+    :color="$vuetify.theme.dark ? 'white' : 'primary lighten-3'"
   )
     template(v-slot:activator)
       v-list-item-content
@@ -132,6 +133,11 @@ export default {
 .count-chip {
   line-height: 1;
   height: 18px;
+}
+::v-deep .v-list-group--active > .v-list-group__header .header-row .v-list-item__title,
+::v-deep .v-list-group--active > .v-list-group__header .header-row .v-icon {
+  opacity: 1 !important;
+  color: white !important;   /* don’t force primary; use normal text color */
 }
 
 </style>

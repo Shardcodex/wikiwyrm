@@ -29,40 +29,12 @@
 @import 'pages/error';
 
 @import 'layout/_rtl';
+@import 'wikiwyrm';
+@import 'wikiwyrm.theme-tokens.css';
+@import 'wikiwyrm.theme-overrides.css';
 
 // Some themeing tweeks because Vue
 
-.theme--dark.v-navigation-drawer.primary {
-  background: #3F37C9 !important;
-}
-
-.theme--light.v-navigation-drawer.primary {
-  background: #3F37C9 !important;
-}
-
-.theme--dark.v-list.primary {
-  background: #3F37C9 !important;
-}
-
-.theme--light.v-list.primary {
-  background: #3F37C9 !important;
-}
-
-.theme--dark.v-application .blue.darken-3 {
-  background: #3730b0 !important;
-}
-.theme--light.v-application .blue.darken-3 {
-  background: #3730b0 !important;
-}
-
-.theme--dark.v-application .blue.darken-2 {
-  background: #3C35C0 !important;
-}
-.theme--light.v-application .blue.darken-2 {
-  background: #3C35C0 !important;
-}
-
-// #45523E maybe?
 
 //infobox styling
 .infobox {
@@ -89,6 +61,9 @@
 .v-main .contents h5,
 .v-main .contents h6 {
   overflow: hidden; /* contain float interaction */
+}
+.v-main .contents h1 {
+  color: primary !important;
 }
 
 .infobox-table {

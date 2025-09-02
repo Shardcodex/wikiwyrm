@@ -1,0 +1,43 @@
+/* WikiWyrm theme tokens – map to Vuetify CSS vars, with safe fallbacks */
+:root {
+  /* brand */
+  --wwm-primary:        var(--v-primary-base, #3f37c9);
+  --wwm-primary-strong: var(--v-primary-darken2, #322ca0);
+  --wwm-primary-soft:   var(--v-primary-lighten3, #938fe0);
+
+  --wwm-accent:         var(--v-accent-base, #746fd8);
+  --wwm-accent-soft:    var(--v-accent-lighten3, #d1cff2);
+
+  /* semantic */
+  --wwm-info:           var(--v-info-base,    #746fd8);
+  --wwm-warning:        var(--v-warning-base, #ffb74d);
+  --wwm-error:          var(--v-error-base,   #e57373);
+  --wwm-success:        var(--v-success-base, #81c784);
+
+  /* neutrals */
+  --wwm-text:           #424242;
+  --wwm-text-weak:      #616161;
+  --wwm-text-weak2:     #757575;
+  --wwm-border:         #e0e0e0;
+  --wwm-border-strong:  #bdbdbd;
+  --wwm-muted:          #9e9e9e;
+  --wwm-surface:        #ffffff;
+  --wwm-surface-2:      #fafafa;
+
+  /* links */
+  --wwm-link:           var(--v-primary-600, #0081AF);
+  --wwm-link-visited:   var(--v-primary-700, #0081AF);
+}
+
+html.theme--dark, .v-application.theme--dark {
+  --wwm-text:           #e0e0e0;
+  --wwm-text-weak:      #bdbdbd;
+  --wwm-text-weak2:     #9e9e9e;
+  --wwm-border:         #616161;
+  --wwm-border-strong:  #424242;
+  --wwm-muted:          #9e9e9e;
+  --wwm-surface:        #181a19;
+  --wwm-surface-2:      #212121;
+
+  /* keep brand mapped to Vuetify dark theme automatically */
+}

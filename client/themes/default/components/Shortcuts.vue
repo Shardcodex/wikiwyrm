@@ -9,7 +9,7 @@ v-list.dense.nav-quick.shortcuts-sidebar
     v-list-item-icon
       v-icon mdi-map
     v-list-item-content
-      v-list-item-title Maps
+      v-list-item-title Atlas
 
   v-list-item.quick-link(
     :href="`/${locale}/gallery`"
