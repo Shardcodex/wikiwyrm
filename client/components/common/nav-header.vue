@@ -166,14 +166,9 @@
             v-divider(vertical)
 
           //- NEW PAGE
-
-          template(v-if='hasNewPagePermission && path && mode !== `edit`')
-            v-tooltip(bottom)
-              template(v-slot:activator='{ on }')
-                v-btn(icon, tile, height='64', v-on='on', @click='pageNew', :aria-label='$t(`common:header.newPage`)')
-                  v-icon(color='grey') mdi-text-box-plus-outline
-              span {{$t('common:header.newPage')}}
-            v-divider(vertical)
+          //- NEW PAGE (shown wherever your other action buttons are)
+          new-page-launcher
+          v-divider(vertical)
 
           //- ADMIN
 
@@ -246,7 +241,7 @@
 <script>
 import { get, sync } from 'vuex-pathify'
 import _ from 'lodash'
-
+import NewPageLauncher from '../../themes/default/components/NewPageLauncher.vue'
 import movePageMutation from 'gql/common/common-pages-mutation-move.gql'
 
 /* global siteConfig, siteLangs */
@@ -254,7 +249,8 @@ import movePageMutation from 'gql/common/common-pages-mutation-move.gql'
 export default {
   components: {
     PageDelete: () => import('./page-delete.vue'),
-    PageConvert: () => import('./page-convert.vue')
+    PageConvert: () => import('./page-convert.vue'),
+    NewPageLauncher: NewPageLauncher
   },
   props: {
     dense: {

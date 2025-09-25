@@ -116,7 +116,7 @@
 }
 
 /* Comments */
-.comments-header { background-color: color-mix(in srgb, var(--wwm-text) 40%, var(--wwm-surface)); color: #fff; }
+.comments-header { background-color: color-mix(in srgb, var(--wwm-accent) , var(--wwm-surface)) !important; color: #fff; }
 .theme--dark .comments-header { background-color: color-mix(in srgb, var(--wwm-text) 30%, var(--wwm-surface)); }
 .comments-main { background-color: color-mix(in srgb, var(--wwm-border) 30%, var(--wwm-surface)); }
 

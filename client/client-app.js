@@ -45,6 +45,18 @@ moment.locale(siteConfig.lang)
 
 store.commit('user/REFRESH_AUTH')
 
+function resolveWorldAndLocaleFromPath() {
+  const segs = (window.location.pathname || '').split('/').filter(Boolean)
+  const isLocale = (s) => /^[A-Za-z]{2}(-[A-Za-z]{2})?$/.test(s || '')
+  let world = 'default'; let locale = 'en'
+  if (segs[0] && !isLocale(segs[0])) {
+    world = segs[0]
+    locale = isLocale(segs[1]) ? segs[1] : locale
+  } else if (isLocale(segs[0])) {
+    locale = segs[0]
+  }
+  return { world, locale }
+}
 // ====================================
 // Initialize Apollo Client (GraphQL)
 // ====================================
@@ -77,22 +89,31 @@ const graphQLLink = ApolloLink.from([
       })
     }
   }),
+
   new BatchHttpLink({
     includeExtensions: true,
     uri: graphQLEndpoint,
     credentials: 'include',
     fetch: async (uri, options) => {
-      // Strip __typename fields from variables
+    // Strip __typename fields from variables
       let body = JSON.parse(options.body)
-      body = body.map(bd => {
-        return ({
-          ...bd,
-          variables: JSON.parse(JSON.stringify(bd.variables), (key, value) => { return key === '__typename' ? undefined : value })
-        })
-      })
+      body = body.map(bd => ({
+        ...bd,
+        variables: JSON.parse(JSON.stringify(bd.variables), (key, value) =>
+          key === '__typename' ? undefined : value
+        )
+      }))
       options.body = JSON.stringify(body)
 
-      // Inject authentication token
+      // Ensure headers object exists
+      options.headers = options.headers || {}
+
+      // Inject tenant headers from current URL
+      const { world, locale } = resolveWorldAndLocaleFromPath()
+      options.headers['x-world-slug'] = world
+      options.headers['x-locale'] = locale
+
+      // Inject authentication token (keep your existing behavior)
       const jwtToken = Cookies.get('jwt')
       if (jwtToken) {
         options.headers.Authorization = `Bearer ${jwtToken}`
@@ -100,7 +121,7 @@ const graphQLLink = ApolloLink.from([
 
       const resp = await fetch(uri, options)
 
-      // Handle renewed JWT
+      // Handle renewed JWT (keep your existing behavior)
       const newJWT = resp.headers.get('new-jwt')
       if (newJWT) {
         Cookies.set('jwt', newJWT, { expires: 365 })
@@ -114,7 +135,18 @@ const graphQLWSLink = new WebSocketLink({
   uri: graphQLWSEndpoint,
   options: {
     reconnect: true,
-    lazy: true
+    lazy: true,
+    connectionParams: () => {
+      const { world, locale } = resolveWorldAndLocaleFromPath()
+      const jwtToken = Cookies.get('jwt')
+      return {
+        headers: {
+          ...(jwtToken ? { Authorization: `Bearer ${jwtToken}` } : {}),
+          'x-world-slug': world,
+          'x-locale': locale
+        }
+      }
+    }
   }
 })
 

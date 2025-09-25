@@ -12,10 +12,12 @@ input PageListFilter {
 
 extend type Query {
   pages: PageQuery
+  pageByPath(path: String!, locale: String!): PageByPath
 }
 
 extend type Mutation {
   pages: PageMutation
+  createPage(input: CreatePageInput!): CreatePagePayload!
 }
 
 # -----------------------------------------------
@@ -87,6 +89,8 @@ type PageQuery {
   conflictLatest(
     id: Int!
   ): PageConflictLatest! @auth(requires: ["write:pages", "manage:pages", "manage:system"])
+
+  listSimple(locale: String, limit: Int = 200): [PageListItem!]!
 }
 
 # -----------------------------------------------
@@ -94,23 +98,7 @@ type PageQuery {
 # -----------------------------------------------
 
 type PageMutation {
-  create(
-    content: String!
-    description: String!
-    editor: String!
-    isPublished: Boolean!
-    isPrivate: Boolean!
-    locale: String!
-    path: String!
-    publishEndDate: Date
-    publishStartDate: Date
-    scriptCss: String
-    scriptJs: String
-    tags: [String]!
-    title: String!
-    category: String
-    featured: Boolean
-  ): PageResponse @auth(requires: ["write:pages", "manage:pages", "manage:system"])
+    create(input: CreatePageInput!): CreatePagePayload! @auth(requires: ["write:pages", "manage:pages", "manage:system"])
 
   update(
     id: Int!
@@ -182,6 +170,19 @@ type PageMutation {
 # -----------------------------------------------
 # TYPES
 # -----------------------------------------------
+type PageByPath {
+  id: ID!
+  path: String!
+  locale: String!
+  title: String
+  description: String
+  editor: String
+  categoryId: String
+  subcategoryId: String
+  isPublished: Boolean!
+  isPrivate: Boolean!
+  content: String!
+}
 
 type PageResponse {
   responseResult: ResponseStatus!
@@ -195,6 +196,7 @@ type PageMigrationResponse {
 
 type Page {
   id: Int!
+  worldId: ID!
   path: String!
   hash: String!
   title: String!
@@ -206,6 +208,7 @@ type Page {
   publishEndDate: Date! @auth(requires: ["write:pages", "manage:system"])
   tags: [PageTag]!
   category: String
+  subcategoryId: ID
   featured: Boolean!
   content: String! @auth(requires: ["read:source", "write:pages", "manage:system"])
   render: String
@@ -223,6 +226,14 @@ type Page {
   creatorId: Int! @auth(requires: ["write:pages", "manage:system"])
   creatorName: String! @auth(requires: ["write:pages", "manage:system"])
   creatorEmail: String! @auth(requires: ["write:pages", "manage:system"])
+  guidedData: JSON
+}
+
+type PageContent {
+  id: ID!
+  pageId: ID!
+  version: Int!
+  content: String!
 }
 
 type PageTag {
@@ -357,4 +368,37 @@ enum PageTreeMode {
   FOLDERS
   PAGES
   ALL
+}
+
+input CreatePageInput {
+  worldID: ID!
+  path: String!
+  locale: String!
+  title: String!
+  description: String!
+  content: String!
+  editor: String!
+  tags: [String]
+  categoryKey: String
+  subcategoryKey: String
+  isPublished: Boolean!
+  isPrivate: Boolean!
+  guidedData: JSON
+}
+
+type PageResult {
+  responseResult: ResponseStatus!
+  page: Page
+}
+
+type CreatePagePayload {
+  responseResult: ResponseStatus!
+  page: CreatedPage
+}
+
+type CreatedPage {
+  id: ID!
+  path: String!
+  locale: String!
+  title: String!
 }

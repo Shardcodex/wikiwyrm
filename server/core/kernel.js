@@ -1,6 +1,7 @@
 const _ = require('lodash')
 const EventEmitter = require('eventemitter2').EventEmitter2
 
+
 /* global WIKI */
 
 module.exports = {

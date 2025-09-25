@@ -4,7 +4,8 @@ const https = require('https')
 const { ApolloServer } = require('apollo-server-express')
 const Promise = require('bluebird')
 const _ = require('lodash')
-
+const tenantContext = require('../graph/tenantContext') // adjust path if servers.js sits elsewhere
+const { tenantMiddleware } = require('../graph/tenantContext')
 /* global WIKI */
 
 module.exports = {
@@ -21,6 +22,7 @@ module.exports = {
   async startHTTP () {
     WIKI.logger.info(`HTTP Server on port: [ ${WIKI.config.port} ]`)
     this.servers.http = http.createServer(WIKI.app)
+    WIKI.app.use(tenantMiddleware())
     this.servers.graph.installSubscriptionHandlers(this.servers.http)
 
     this.servers.http.listen(WIKI.config.port, WIKI.config.bindIP)
@@ -122,7 +124,25 @@ module.exports = {
     const graphqlSchema = require('../graph')
     this.servers.graph = new ApolloServer({
       ...graphqlSchema,
-      context: ({ req, res }) => ({ req, res }),
+      context: async (ctxArgs) => {
+        const koaCtx = ctxArgs.ctx
+        const expressReq = ctxArgs.req
+        const req = expressReq || (koaCtx && (koaCtx.req || koaCtx.request)) || {}
+        const res = ctxArgs.res || (koaCtx && (koaCtx.res || koaCtx.response))
+
+        // derive if middleware didn’t run (SSR tools, tests, etc.)
+        const parsed = tenantContext(req)
+        const worldSlug = req.worldSlug != null ? req.worldSlug : parsed.worldSlug
+        const locale = req.locale != null ? req.locale : parsed.locale
+
+        // normalize req so legacy resolvers reading context.req.user still work
+        const user = req.user || (koaCtx && koaCtx.state && koaCtx.state.user) || null
+        req.worldSlug = worldSlug
+        req.locale = locale
+        req.user = user
+
+        return { req, res, user, worldSlug, locale, db: WIKI.db }
+      },
       formatError: (err) => {
         console.error('GraphQL Error:', err)
         return err

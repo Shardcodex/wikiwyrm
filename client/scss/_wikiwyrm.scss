@@ -48,4 +48,4 @@ a:hover { color: var(--wwm-accent-600); }
 .wwm-search .v-input__slot { background: color-mix(in srgb, var(--wwm-primary) 12%, transparent); }
 
 /* Infobox still works; just warmer tones from tokens */
-.contents .infobox { border: 1px solid var(--wwm-border); border-radius: 10px; }
+.contents .infobox { border-radius: 10px; }

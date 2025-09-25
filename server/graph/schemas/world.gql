@@ -1,0 +1,15 @@
+type World {
+  id: ID!
+  slug: String!
+  name: String!
+  isPrivate: Boolean!
+}
+
+type WorldMutationResult {
+  responseResult: ResponseStatus!
+  world: World
+}
+
+extend type Mutation {
+  createWorld(slug: String!, name: String!, isPrivate: Boolean = false): WorldMutationResult!
+}

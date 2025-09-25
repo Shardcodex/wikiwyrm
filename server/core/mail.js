@@ -62,7 +62,7 @@ module.exports = {
       html: _.get(this.templates, opts.template)({
         logo: (WIKI.config.logoUrl.startsWith('http') ? '' : WIKI.config.host) + WIKI.config.logoUrl,
         siteTitle: WIKI.config.title,
-        copyright: WIKI.config.company.length > 0 ? WIKI.config.company : 'Powered by Wiki.js',
+        copyright: WIKI.config.company.length > 0 ? WIKI.config.company : 'Powered by WikiWyrm',
         ...opts.data
       })
     })

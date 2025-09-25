@@ -41,16 +41,16 @@
 import gql from 'graphql-tag'
 
 // Use SEARCH because it already works in your app and doesn’t depend on your new list args
-const QUERY = gql`
-  query {
+// replace LIST_QUERY
+const LIST_QUERY = gql`
+  query SidebarList($locale: String!, $limit: Int) {
     pages {
-      search(query: "") {
-        results {
-          id
-          path
-          title
-          category
-        }
+      list(locale: $locale, limit: $limit) {
+        id
+        path
+        title
+        category
+        locale
       }
     }
   }
@@ -62,34 +62,54 @@ export default {
     return {
       allPages: [],
       openGroups: {},
+      // align with your guided categories (extend as needed)
       categoriesMaster: [
-        'Characters', 'Locations', 'Items', 'Factions', 'Magic', 'Languages', 'Other'
+        'Characters', 'Locations', 'Factions', 'Magic', 'History & Lore',
+        'Languages', 'Creatures', 'Technology & Tools', 'Other'
       ],
       iconMap: {
         Characters: { full: 'mdi-account-group', empty: 'mdi-account-outline' },
         Locations: { full: 'mdi-map-marker-radius', empty: 'mdi-map-marker-outline' },
-        Items: { full: 'mdi-sword', empty: 'mdi-sword-cross' },
         Factions: { full: 'mdi-shield-account', empty: 'mdi-shield-outline' },
         Magic: { full: 'mdi-auto-fix', empty: 'mdi-auto-fix' },
+        'History & Lore': { full: 'mdi-timeline-text', empty: 'mdi-timeline-clock-outline' },
         Languages: { full: 'mdi-alphabet-greek', empty: 'mdi-alphabet-greek' },
+        Creatures: { full: 'mdi-paw', empty: 'mdi-paw-outline' },
+        'Technology & Tools': { full: 'mdi-cog', empty: 'mdi-cog-outline' },
         Other: { full: 'mdi-folder', empty: 'mdi-folder-outline' }
       },
-      locale: 'en'
+      locale: 'en',
+      loading: false,
+      error: null
     }
   },
+
+  apollo: {
+    allPages: {
+      query: LIST_QUERY,
+      variables () {
+        const loc = this.$store?.state?.i18n?.locale || 'en'
+        this.locale = loc
+        return { locale: loc, limit: 500 }
+      },
+      update: d => d?.pages?.list || [],
+      fetchPolicy: 'network-only',
+      error: e => console.error('[CategorySidebar] list failed:', e)
+    }
+  },
+
   computed: {
     pagesByCategory () {
       const byCat = {}
       for (const p of (this.allPages || [])) {
-        const cat = (p.category && typeof p.category === 'string') ? p.category : 'Other'
+        const cat = (p.category && typeof p.category === 'string' && p.category.trim()) ? p.category : 'Other'
         if (!byCat[cat]) byCat[cat] = []
         byCat[cat].push(p)
       }
-      // ensure all masters exist
+      // ensure masters exist (keeps consistent ordering)
       for (const name of this.categoriesMaster) {
         if (!byCat[name]) byCat[name] = []
       }
-      // optional sort
       Object.keys(byCat).forEach(k => byCat[k].sort((a, b) => (a.title || '').localeCompare(b.title || '')))
       return byCat
     },
@@ -101,10 +121,17 @@ export default {
     }
   },
 
+  watch: {
+    // auto-refresh when locale changes
+    '$store.state.i18n.locale' () {
+      if (this.$apollo && this.$apollo.queries && this.$apollo.queries.allPages) {
+        this.$apollo.queries.allPages.refetch()
+      }
+    }
+  },
+
   methods: {
-    isGroupOpen (name) {
-      return !!this.openGroups[name]
-    },
+    isGroupOpen (name) { return !!this.openGroups[name] },
     toggleGroup (name) {
       const next = !this.isGroupOpen(name)
       if (this.$set) this.$set(this.openGroups, name, next)
@@ -122,55 +149,14 @@ export default {
       return !arr || arr.length === 0
     },
     linkFor (p) {
-      const storeLocale = this.$store?.state?.i18n?.locale
-      const urlLocale =
-        p.locale ||
-        storeLocale ||
-        (typeof window !== 'undefined' ?
-          (window.location.pathname.split('/')[1] || 'en') :
-          'en')
+      const storeLocale = this.$store && this.$store.state && this.$store.state.i18n && this.$store.state.i18n.locale
+      const urlLocale = p.locale || storeLocale || (typeof window !== 'undefined' ?
+        (window.location.pathname.split('/')[1] || 'en') :
+        'en')
       return `/${urlLocale}/${p.path}`
     },
-
-    async loadPages () {
-      try {
-        this.loading = true
-        this.error = null
-        // .. your existing GraphQL fetch that fills this.allPages ..
-      } catch (e) {
-        console.error('CategorySidebar fetch failed:', e)
-        this.error = e
-      } finally {
-        this.loading = false
-      }
-    }
-  },
-  async mounted () {
-    try {
-      const loc =
-        (this.$store && this.$store.state && this.$store.state.i18n && this.$store.state.i18n.locale) ||
-        'en'
-      this.locale = loc
-
-      const { data } = await this.$apollo.query({
-        query: QUERY,
-        fetchPolicy: 'network-only'
-      })
-
-      const list = ((((data || {}).pages || {}).search || {}).results) || []
-      // dev log: see what you actually got
-      console.log('[CategorySidebar] results:', list)
-
-      // normalize
-      this.allPages = list.map(r => ({
-        id: r.id,
-        path: r.path,
-        title: r.title,
-        category: (r.category && typeof r.category === 'string') ? r.category : 'Other'
-      }))
-    } catch (e) {
-      console.error('CategorySidebar fetch failed:', e)
-      this.allPages = []
+    refresh () {
+      this.$apollo.queries.allPages && this.$apollo.queries.allPages.refetch()
     }
   }
 }

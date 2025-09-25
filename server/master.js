@@ -9,6 +9,7 @@ const KnexSessionStore = require('connect-session-knex')(session)
 const favicon = require('serve-favicon')
 const path = require('path')
 const _ = require('lodash')
+const worldRoutes = require('./controllers/routes-world')
 
 /* global WIKI */
 
@@ -143,6 +144,8 @@ module.exports = async () => {
   // ----------------------------------------
   // Routing
   // ----------------------------------------
+
+  WIKI.app.use(worldRoutes)
 
   app.use(async (req, res, next) => {
     res.locals.siteConfig = {

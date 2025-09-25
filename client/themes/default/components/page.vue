@@ -3,7 +3,7 @@
     nav-header(v-if='!printView')
     v-navigation-drawer(
       v-if='navMode !== `NONE` && !printView'
-      :class='$vuetify.theme.dark ? `grey darken-4-d4` : `primary`'
+      :class="[$vuetify.theme.dark ? 'grey darken-4-d4' : 'primary', 'drawer-blend']"
       dark
       app
       clipped
@@ -49,7 +49,7 @@
             status-indicator.ml-3(negative, pulse)
         v-divider
       v-container.grey.pa-0(fluid, :class="$vuetify.theme.dark ? 'darken-4-l3' : 'lighten-4'")
-        v-row.page-header-section(no-gutters align="center" style="height: 90px;")
+        v-row.page-header-section.headingtop(no-gutters align="center" style="height: 90px;")
           v-col.page-col-content.is-page-header(
             :offset-xl='tocPosition === "left" ? 2 : 0'
             :offset-lg='tocPosition === "left" ? 3 : 0'
@@ -63,7 +63,7 @@
 
               // LEFT: headings — grows to fill, truncates nicely
               .page-header-titles.flex-grow-1.min-w-0
-                .headline.grey--text(:class='$vuetify.theme.dark ? "text--lighten-2" : "text--darken-3"') {{ title }}
+                .headline.grey--text.bigger(:class='$vuetify.theme.dark ? "text--lighten-2" : "text--darken-3"' style="font-size: 2rem !important") {{ title }}
                 .caption.grey--text.text--darken-1 {{ description }}
 
               // RIGHT: favorite — inline on md+, wraps below on xs/sm
@@ -349,7 +349,14 @@
               span {{$t('common:page.editPage')}}
             v-alert.mb-5(v-if='!isPublished', color='red', outlined, icon='mdi-minus-circle', dense)
               .caption {{$t('common:page.unpublishedWarning')}}
-            .contents(ref='container')
+            DirectoryView(
+              v-if="isDirectory"
+              :prefix="directoryPrefix"
+              :title="directoryTitle"
+              :icon="directoryIcon"
+              :locale="locale"
+            )
+            .contents(v-else ref='container')
               div(v-if="infoboxHtml" class="infobox" v-html="infoboxHtml")
               slot(name='contents')
             .comments-container#discussion(v-if='commentsEnabled && commentsPerms.read && !printView')
@@ -391,7 +398,7 @@ import _ from 'lodash'
 import ClipboardJS from 'clipboard'
 import Vue from 'vue'
 import gql from 'graphql-tag'
-
+import DirectoryView from './DirectoryView.vue'
 const TOGGLE_FEATURED = gql`
   mutation ToggleFeatured($id: Int!, $featured: Boolean!) {
     pages {
@@ -443,7 +450,8 @@ Prism.plugins.toolbar.registerButton('copy-to-clipboard', (env) => {
 export default {
   components: {
     NavSidebar,
-    StatusIndicator
+    StatusIndicator,
+    DirectoryView
   },
   props: {
     pageId: { type: Number, default: 0 },
@@ -811,6 +819,45 @@ export default {
     max-width: 100% !important;
     margin: 0 0 1em 0;
   }
+}
+
+.headingtop {
+ position: relative; /* Essential for positioning pseudo-elements */
+  overflow: hidden; /* Important to hide the excess of the pseudo-element */
+}
+
+/* Quarter circle overlay that “erases” the corner by painting the parent color */
+
+/* green arc outline */
+.headingtop::before {
+  content: '';
+  --r: 10px; /* the radius */
+  --s: 15px; /* size of inner curve */
+  --x: 10px; /* horizontal offset (no percentane) */
+  --y: 10px; /* vertical offset (no percentage) */
+position:absolute;
+top:0;
+  width: 50px;
+  aspect-ratio: 1;
+  background: #24362B;
+  margin-top:-15px;
+  margin-left:-15px;
+  border-radius: 0 var(--r) var(--r) var(--r);
+  --_m:/calc(2*var(--r)) calc(2*var(--r)) radial-gradient(#000 70%,#0000 72%);
+  --_g:conic-gradient(from 90deg at calc(100% - var(--r)) calc(100% - var(--r)),#0000 25%,#000 0);
+  --_d:(var(--s) + var(--r));
+  mask:
+    calc(100% - var(--_d) - var(--x)) 100% var(--_m),
+    100% calc(100% - var(--_d) - var(--y)) var(--_m),
+    radial-gradient(var(--s) at 100% 100%,#0000 99%,#000 calc(100% + 1px))
+    calc(-1*var(--r) - var(--x)) calc(-1*var(--r) - var(--y)),
+    var(--_g) calc(-1*var(--_d) - var(--x)) 0,
+    var(--_g) 0 calc(-1*var(--_d) - var(--y));
+  mask-repeat: no-repeat;
+
+}
+.bigger{
+  font-size: 2rem !important;
 }
 
 </style>
