@@ -13,6 +13,8 @@ input PageListFilter {
 extend type Query {
   pages: PageQuery
   pageByPath(path: String!, locale: String!): PageByPath
+  worldBySlug(slug: String!): World
+
 }
 
 extend type Mutation {
@@ -402,3 +404,5 @@ type CreatedPage {
   locale: String!
   title: String!
 }
+
+type World { id: ID!, slug: String!, name: String! }

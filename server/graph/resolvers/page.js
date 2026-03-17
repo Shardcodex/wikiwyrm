@@ -17,6 +17,110 @@ async function loadWorldOrThrow(ctx) {
   if (!world) throw new Error('World not found')
   return world
 }
+async function createStrict(_parent, { input }, context) {
+  const k = WIKI.models.knex
+  const userId = context?.req?.user?.id
+  if (!userId) throw new Error('Auth required')
+
+  // ---- required fields from input ----
+  const {
+    worldID, // required (ID of worlds.id)
+    locale, // required (e.g. "en")
+    path, title, description,
+    content = '',
+    editor,
+    tags = [],
+    categoryKey,
+    subcategoryKey,
+    isPublished = true,
+    isPrivate = false,
+    guidedData
+  } = input
+
+  if (!worldID) throw new Error('worldID is required')
+  if (!locale) throw new Error('locale is required')
+  if (!path || !title || !editor) throw new Error('Missing required page fields')
+
+  // ---- load world by ID and compare with tenant context ----
+  const world = await k('worlds').first(['id', 'slug']).where({ id: worldID })
+  if (!world) throw new Error('World not found')
+
+  // Context comes from your tenant middleware (URL/headers)
+  const ctxSlug = context?.worldSlug
+  const ctxLocale = context?.locale || (WIKI?.config?.lang?.code || 'en')
+
+  // HARD guarantees: refuse if mismatched
+  if (!ctxSlug || world.slug !== ctxSlug) {
+    throw new Error('World mismatch (context vs input)')
+  }
+  if (ctxLocale.toLowerCase() !== locale.toLowerCase()) {
+    throw new Error('Locale mismatch (context vs input)')
+  }
+
+  // ---- enforce unique path within world + locale ----
+  const existing = await k('pages')
+    .first('id')
+    .where({ world_id: world.id, localeCode: locale, path })
+  if (existing) throw new Error('A page with this path already exists in this world/locale')
+
+  // ---- optional: resolve category/subcategory ids ----
+  let categoryId = null
+  if (categoryKey) {
+    const c = await k('categories').first('id').where({ world_id: world.id, key: categoryKey })
+    categoryId = c?.id || null
+  }
+  let subcategoryId = null
+  if (subcategoryKey && categoryId) {
+    const s = await k('subcategories')
+      .first('id')
+      .where({ world_id: world.id, category_id: categoryId, key: subcategoryKey })
+    subcategoryId = s?.id || null
+  }
+
+  const pageId = crypto.randomUUID()
+
+  // ---- write in a single transaction ----
+  await k.transaction(async trx => {
+    await trx('pages').insert({
+      id: pageId,
+      world_id: world.id,
+      creatorId: userId, // Wiki.js stock column
+      path,
+      localeCode: locale, // Wiki.js stock column
+      title,
+      description,
+      editorKey: editor, // Wiki.js stock column
+      category: categoryKey || null, // keep display category for stock UI
+      category_id: categoryId,
+      subcategory_id: subcategoryId,
+      isPublished: isPublished ? 1 : 0,
+      isPrivate: isPrivate ? 1 : 0,
+      guided_data: guidedData ? JSON.stringify(guidedData) : null,
+      createdAt: trx.fn.now(),
+      updatedAt: trx.fn.now()
+    })
+
+    await trx('page_contents').insert({
+      id: crypto.randomUUID(),
+      page_id: pageId,
+      version: 1,
+      content,
+      created_by: userId,
+      created_at: trx.fn.now()
+    })
+
+    if (tags.length) {
+      await trx('page_tags')
+        .insert(tags.map(t => ({ page_id: pageId, tag: t })))
+        .onConflict(['page_id', 'tag']).ignore()
+    }
+  })
+
+  return {
+    responseResult: graphHelper.generateSuccess('Page created successfully.'),
+    page: { id: pageId, path, locale, title }
+  }
+}
 
 module.exports = {
   // ---------------------------------
@@ -46,6 +150,12 @@ module.exports = {
         .andWhere('localeCode', loc)
         .andWhere('path', path)
 
+      return row || null
+    },
+    async worldBySlug(_p, { slug }) {
+      const row = await WIKI.models.knex('worlds')
+        .first(['id', 'slug', 'name'])
+        .where({ slug })
       return row || null
     }
   },
@@ -484,80 +594,8 @@ module.exports = {
     /**
      * CREATE PAGE (world-aware)
      */
-    async create(_, args, context) {
-      const world = await loadWorldOrThrow(context)
-      try {
-        const { req, locale = context.locale || 'en' } = context
-        const userId = req?.user?.id
-        if (!userId) throw new Error('Auth required')
-
-        const {
-          path, title, description, content, editor,
-          tags = [], category: categoryKey, subcategoryKey,
-          isPublished, isPrivate, guidedData
-        } = args
-
-        // Resolve category/subcategory IDs (optional)
-        let categoryId = null
-        if (categoryKey) {
-          const cat = await WIKI.models.knex('categories')
-            .first('id')
-            .where({ world_id: world.id, key: categoryKey })
-          categoryId = (cat && cat.id) || null
-        }
-        let subcategoryId = null
-        if (subcategoryKey && categoryId) {
-          const sub = await WIKI.models.knex('subcategories')
-            .first('id')
-            .where({ world_id: world.id, category_id: categoryId, key: subcategoryKey })
-          subcategoryId = (sub && sub.id) || null
-        }
-
-        // Insert page
-        const pageId = crypto.randomUUID()
-        await WIKI.models.knex('pages').insert({
-          id: pageId,
-          world_id: world.id,
-          creatorId: userId,
-          path,
-          localeCode: locale,
-          title,
-          description,
-          editorKey: editor,
-          category: categoryKey || null, // keep string category for compatibility
-          category_id: categoryId || null,
-          subcategory_id: subcategoryId || null,
-          isPublished: !!isPublished,
-          isPrivate: !!isPrivate,
-          guided_data: guidedData ? JSON.stringify(guidedData) : null,
-          createdAt: WIKI.models.knex.fn.now(),
-          updatedAt: WIKI.models.knex.fn.now()
-        })
-
-        // Initial content version
-        await WIKI.models.knex('page_contents').insert({
-          id: crypto.randomUUID(),
-          page_id: pageId,
-          version: 1,
-          content: content || '',
-          created_by: userId,
-          created_at: WIKI.models.knex.fn.now()
-        })
-
-        // Tags
-        if (tags.length) {
-          const vals = tags.map(t => ({ page_id: pageId, tag: t }))
-          await WIKI.models.knex('page_tags').insert(vals).onConflict(['page_id', 'tag']).ignore()
-        }
-
-        return {
-          responseResult: graphHelper.generateSuccess('Page created successfully.'),
-          page: { id: pageId, path, locale, title }
-        }
-      } catch (err) {
-        return graphHelper.generateError(err)
-      }
-    },
+    create: createStrict,
+  },
 
     /**
      * UPDATE PAGE

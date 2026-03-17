@@ -141,6 +141,29 @@ v-dialog(v-model="open" max-width="780")
                       dense
                       clearable
                     )
+                    // Per-type dynamic fields
+                    template(v-if="dynamicFields.length")
+                      v-divider.my-3
+                      .text-caption.grey--text.mb-2 Optional details (used to pre-fill page content)
+                      v-row(dense)
+                        v-col(v-for="fld in dynamicFields" :key="fld.key" cols="12" :sm="fld.sm || 12")
+                          v-textarea(
+                            v-if="fld.type === 'textarea'"
+                            v-model="form.extra[fld.key]"
+                            :label="fld.label"
+                            outlined
+                            dense
+                            rows="3"
+                            auto-grow
+                          )
+                          v-text-field(
+                            v-else
+                            v-model="form.extra[fld.key]"
+                            :label="fld.label"
+                            :type="fld.type === 'number' ? 'number' : 'text'"
+                            outlined
+                            dense
+                          )
 
                 // MARKDOWN / RICH
                 template(v-else)
@@ -192,6 +215,12 @@ v-dialog(v-model="open" max-width="780")
 <script>
 import gql from 'graphql-tag'
 
+const WORLD_ID_BY_SLUG = gql`
+  query WorldIdBySlug($slug: String!) {
+    worldBySlug(slug: $slug) { id }
+  }
+`
+
 const CREATE_PAGE = gql`
   mutation CreatePage($input: CreatePageInput!) {
     pages {
@@ -211,6 +240,7 @@ export default {
       step: 1,
       busy: false,
       openInEditor: true,
+      worldID: null,
 
       // new bits
       mode: null, // 'guided' | 'markdown' | 'rich'
@@ -353,6 +383,19 @@ export default {
       }
     }
   },
+  async mounted () {
+    const segs = (window.location.pathname || '').split('/').filter(Boolean)
+    const isLocale = s => /^[A-Za-z]{2}(-[A-Za-z]{2})?$/.test(s || '')
+    let world = 'default'
+    if (segs[0] && !isLocale(segs[0])) world = segs[0]
+
+    const { data } = await this.$apollo.query({
+      query: WORLD_ID_BY_SLUG,
+      variables: { slug: world },
+      fetchPolicy: 'cache-first'
+    })
+    this.worldID = data?.worldBySlug?.id || null
+  },
 
   computed: {
     typeList () { return Object.entries(this.types).map(([key, v]) => ({ key, ...v })) },
@@ -428,10 +471,13 @@ export default {
         .map(([k, v]) => `${k}: ${String(v).replace(/\n/g, '\\n')}`)
         .join('\n') + '\n---\n'
 
-      // Use field labels to scaffold sections, but no inputs here.
-      const sectionLabels = (this.dynamicFields || []).map(f => f.label)
-      const sections = sectionLabels
-        .map(label => `## ${label}\n_TBD_\n`)
+      // Scaffold sections from dynamic fields, using filled values when available.
+      const sections = (this.dynamicFields || [])
+        .map(f => {
+          const val = (this.form.extra || {})[f.key]
+          const body = val ? String(val).trim() : '_TBD_'
+          return `## ${f.label}\n${body}\n`
+        })
         .join('\n')
 
       const h1 = `# ${this.form.title}\n\n`
@@ -454,53 +500,51 @@ export default {
     async create () {
       this.busy = true
       try {
-        let content, editor, category, tags
-        const isPublished = true
-        const isPrivate = false
+        let content, editor, tags
+        let guidedData = null
         if (this.mode === 'guided') {
           content = this.generateGuidedContent()
           editor = 'markdown'
-          category = this.categoryLabel
           tags = this.form.subcategory ? [this.slug(this.form.subcategory)] : []
+          // Collect non-empty dynamic field values
+          guidedData = Object.fromEntries(
+            Object.entries(this.form.extra || {}).filter(([, v]) => v !== null && v !== undefined && v !== '')
+          )
         } else if (this.mode === 'markdown') {
           content = this.generateBlankContent('markdown')
           editor = 'markdown'
-          category = this.quick.category || null
           tags = []
         } else {
           content = this.generateBlankContent('html')
-          // If your rich editor uses another key (e.g. 'prosemirror'), change here:
           editor = 'html'
-          category = this.quick.category || null
           tags = []
         }
 
-        const path = this.previewPath
-
         const input = {
-          path,
+          path: this.previewPath,
           title: this.form.title,
           description: this.form.description || '',
           content,
           editor,
-          categoryKey: this.mode === 'guided' ? this.selectedType : null,
+          tags,
+          categoryKey: this.mode === 'guided' ? (this.selectedType || null) : null,
           subcategoryKey: this.mode === 'guided' ? (this.form.subcategory || null) : null,
-          tags: (tags && tags.length ? tags : []).map(String), // ALWAYS send an array (fixes [String] vs [String!])
           isPublished: true,
           isPrivate: false,
-          guidedData: this.mode === 'guided' ?
-            { category: this.categoryLabel, subcategory: this.form.subcategory || null, ...this.form.extra } :
-            null
+          guidedData,
+          worldID: this.worldID,
+          locale: this.locale
         }
 
         const res = await this.$apollo.mutate({
           mutation: CREATE_PAGE,
-          variables: { input } // <-- single input object
+          variables: { input }
         })
 
         const ok = res?.data?.pages?.create?.responseResult?.succeeded
         if (!ok) throw new Error(res?.data?.pages?.create?.responseResult?.message || 'Create failed')
 
+        const path = this.previewPath
         if (this.openInEditor) {
           window.location.assign(`/e/${this.locale}/${path}`)
         } else {
