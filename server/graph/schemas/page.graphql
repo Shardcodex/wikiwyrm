@@ -404,5 +404,3 @@ type CreatedPage {
   locale: String!
   title: String!
 }
-
-type World { id: ID!, slug: String!, name: String! }
