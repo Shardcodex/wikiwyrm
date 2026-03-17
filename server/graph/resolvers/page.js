@@ -595,7 +595,6 @@ module.exports = {
      * CREATE PAGE (world-aware)
      */
     create: createStrict,
-  },
 
     /**
      * UPDATE PAGE
